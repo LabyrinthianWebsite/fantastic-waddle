@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .breadcrumb {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        /* Model Header */
+        .model-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-info {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .model-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .model-details h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .model-meta {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .model-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Sets Grid */
+        .sets-section {
+            margin-top: 2rem;
+        }
+
+        .section-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .section-subtitle {
+            color: #666;
+        }
+
+        .sets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .set-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .set-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .set-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .set-content {
+            padding: 1.5rem;
+        }
+
+        .set-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .set-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .set-description {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .set-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .model-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .model-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/studios">Studios</a></li>
+                <li><a href="/models">Models</a></li>
+                <li><a href="/sets">Sets</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a> › 
+            <a href="/models">Models</a> › 
+            <%= model.name %>
+        </div>
+
+        <div class="model-header">
+            <div class="model-info">
+                <div class="model-avatar">
+                    <%= model.name.charAt(0).toUpperCase() %>
+                </div>
+                <div class="model-details">
+                    <h1><%= model.name %></h1>
+                    <div class="model-meta">
+                        <% if (model.studio_name) { %>
+                            Studio: <a href="/studios/<%= model.studio_slug %>"><%= model.studio_name %></a>
+                        <% } %>
+                        <% if (model.created_at) { %>
+                            • Added <%= new Date(model.created_at).toLocaleDateString() %>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="model-stats">
+                    <div class="stat-item">
+                        <div class="stat-number"><%= sets ? sets.length : 0 %></div>
+                        <div class="stat-label">Sets</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sets-section">
+            <% if (sets && sets.length > 0) { %>
+                <div class="section-header">
+                    <h2 class="section-title">Photo Sets</h2>
+                    <p class="section-subtitle">Browse all sets featuring <%= model.name %></p>
+                </div>
+                <div class="sets-grid">
+                    <% sets.forEach(set => { %>
+                        <div class="set-card">
+                            <div class="set-image">
+                                <% if (set.thumbnail_path) { %>
+                                    <img src="<%= set.thumbnail_path %>" alt="<%= set.name %>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <% } else { %>
+                                    📸 <%= set.name %>
+                                <% } %>
+                            </div>
+                            <div class="set-content">
+                                <h3 class="set-title"><%= set.name %></h3>
+                                <div class="set-meta">
+                                    <% if (set.photo_count) { %>
+                                        <%= set.photo_count %> photos
+                                    <% } %>
+                                    <% if (set.created_at) { %>
+                                        • <%= new Date(set.created_at).toLocaleDateString() %>
+                                    <% } %>
+                                </div>
+                                <% if (set.description) { %>
+                                    <p class="set-description"><%= set.description %></p>
+                                <% } %>
+                                <div class="set-actions">
+                                    <a href="/sets/<%= set.slug || set.id %>" class="btn btn-primary">View Set</a>
+                                    <a href="/admin/sets/<%= set.id %>/edit" class="btn btn-outline">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="empty-icon">📸</div>
+                    <h3>No Sets Yet</h3>
+                    <p>No photo sets have been added for <%= model.name %> yet.</p>
+                    <a href="/admin/sets/new?model=<%= model.id %>" class="btn btn-primary" style="margin-top: 1rem;">Add First Set</a>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

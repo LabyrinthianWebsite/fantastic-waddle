@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .breadcrumb {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Studios Grid */
+        .studios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .studio-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .studio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .studio-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .studio-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .studio-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .studio-tagline {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .studio-content {
+            padding: 2rem;
+        }
+
+        .studio-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .studio-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .studio-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Featured Studio */
+        .featured-studio {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .featured-content {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .featured-logo {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .featured-info h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .featured-description {
+            opacity: 0.9;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .featured-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Add Button */
+        .add-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .add-button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .studios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/studios">Studios</a></li>
+                <li><a href="/models">Models</a></li>
+                <li><a href="/sets">Sets</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a> › Studios
+        </div>
+
+        <div class="page-header">
+            <h1 class="page-title">Studios</h1>
+            <p class="page-subtitle">Explore all photography studios in the gallery</p>
+        </div>
+
+        <% if (studios && studios.length > 0) { %>
+            <div class="studios-grid">
+                <% let featuredStudio = studios.find(s => s.featured) || studios[0]; %>
+                <% if (featuredStudio && studios.length > 1) { %>
+                    <div class="studio-card featured-studio">
+                        <div class="featured-content">
+                            <div class="featured-logo">
+                                <% if (featuredStudio.logo_path) { %>
+                                    <img src="<%= featuredStudio.logo_path %>" alt="<%= featuredStudio.name %>" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <% } else { %>
+                                    <%= featuredStudio.name.charAt(0).toUpperCase() %>
+                                <% } %>
+                            </div>
+                            <div class="featured-info">
+                                <h2><%= featuredStudio.name %></h2>
+                                <p class="featured-description">
+                                    <%= featuredStudio.description || 'Featured photography studio with premium content' %>
+                                </p>
+                                <div style="margin-top: 1rem;">
+                                    <a href="/studios/<%= featuredStudio.slug || featuredStudio.id %>" class="btn btn-outline">Explore Studio</a>
+                                </div>
+                            </div>
+                            <div class="featured-stats">
+                                <div class="stat-item" style="background: rgba(255,255,255,0.2);">
+                                    <div class="stat-number" style="color: white;"><%= featuredStudio.model_count || 0 %></div>
+                                    <div class="stat-label" style="color: rgba(255,255,255,0.8);">Models</div>
+                                </div>
+                                <div class="stat-item" style="background: rgba(255,255,255,0.2);">
+                                    <div class="stat-number" style="color: white;"><%= featuredStudio.set_count || 0 %></div>
+                                    <div class="stat-label" style="color: rgba(255,255,255,0.8);">Sets</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% studios.forEach(studio => { %>
+                    <% if (!studio.featured || studios.length === 1) { %>
+                        <div class="studio-card">
+                            <div class="studio-header">
+                                <div class="studio-logo">
+                                    <% if (studio.logo_path) { %>
+                                        <img src="<%= studio.logo_path %>" alt="<%= studio.name %>" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    <% } else { %>
+                                        <%= studio.name.charAt(0).toUpperCase() %>
+                                    <% } %>
+                                </div>
+                                <h3 class="studio-name"><%= studio.name %></h3>
+                                <% if (studio.tagline) { %>
+                                    <p class="studio-tagline"><%= studio.tagline %></p>
+                                <% } %>
+                            </div>
+                            <div class="studio-content">
+                                <% if (studio.description) { %>
+                                    <p class="studio-description"><%= studio.description %></p>
+                                <% } %>
+                                <div class="studio-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= studio.model_count || 0 %></div>
+                                        <div class="stat-label">Models</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= studio.set_count || 0 %></div>
+                                        <div class="stat-label">Sets</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><%= studio.photo_count || 0 %></div>
+                                        <div class="stat-label">Photos</div>
+                                    </div>
+                                </div>
+                                <div class="studio-actions">
+                                    <a href="/studios/<%= studio.slug || studio.id %>" class="btn btn-primary">View Studio</a>
+                                    <a href="/admin/studios/<%= studio.id %>/edit" class="btn btn-outline">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="empty-icon">🏢</div>
+                <h3>No Studios Yet</h3>
+                <p>No photography studios have been added to the gallery yet.</p>
+                <a href="/admin/studios/new" class="btn btn-primary" style="margin-top: 1rem;">Add First Studio</a>
+            </div>
+        <% } %>
+    </main>
+
+    <a href="/admin/studios/new" class="add-button" title="Add New Studio">+</a>
+</body>
+</html>
