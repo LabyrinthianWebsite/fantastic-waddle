@@ -3,77 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - CommissionDB</title>
-    <link rel="stylesheet" href="/public/css/style.css">
-</head>
-<body class="dark-theme">
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <h1>Admin Login</h1>
-                <p>Access the CommissionDB admin panel</p>
-            </div>
-
-            <% if (error) { %>
-                <div class="error-message">
-                    <%= error %>
-                </div>
-            <% } %>
-
-            <form class="login-form" method="POST" action="/admin/login">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
-                        required 
-                        class="form-input"
-                        placeholder="Enter your username"
-                        autofocus
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        required 
-                        class="form-input"
-                        placeholder="Enter your password"
-                    >
-                </div>
-
-                <button type="submit" class="btn btn-solid btn-full">
-                    Login
-                </button>
-            </form>
-
-            <div class="login-footer">
-                <a href="/" class="btn btn-ghost">← Back to Site</a>
-            </div>
-        </div>
-    </div>
-
+    <title><%= title %></title>
     <style>
-        .login-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg);
-            padding: 2rem;
         }
 
-        .login-card {
-            background: var(--card-bg);
-            border-radius: 12px;
+        .login-container {
+            background: white;
             padding: 3rem;
-            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
-            box-shadow: var(--shadow);
+            max-width: 400px;
         }
 
         .login-header {
@@ -82,38 +35,111 @@
         }
 
         .login-header h1 {
+            color: #333;
             font-size: 2rem;
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .login-header p {
-            color: var(--text-secondary);
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
         }
 
         .error-message {
-            background: var(--error);
-            color: white;
+            background: #fee;
+            color: #c33;
             padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
             text-align: center;
         }
 
-        .login-form {
-            margin-bottom: 2rem;
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        .login-footer {
+        .back-link {
             text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
         }
     </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Gallery Suite</h1>
+            <p>Admin Login</p>
+        </div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-message">
+            <%= error %>
+        </div>
+        <% } %>
+
+        <form method="POST" action="/admin/login">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username" autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn">Login</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/">← Back to Gallery</a>
+        </div>
+    </div>
 </body>
 </html>

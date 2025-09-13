@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            width: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #667eea;
+        }
+
+        /* Main content */
+        main {
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Grid layouts */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .card-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-description {
+            color: #777;
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .search-box input {
+                width: 200px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        /* Page specific styles */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .model-grid .card-image {
+            height: 250px;
+        }
+
+        .set-grid .card-image {
+            height: 180px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite</a>
+            <ul class="nav-links">
+                <li><a href="/" class="<%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>">Home</a></li>
+                <li><a href="/studios" class="<%= typeof page !== 'undefined' && page === 'studios' ? 'active' : '' %>">Studios</a></li>
+                <li><a href="/models" class="<%= typeof page !== 'undefined' && page === 'models' ? 'active' : '' %>">Models</a></li>
+                <li><a href="/sets" class="<%= typeof page !== 'undefined' && page === 'sets' ? 'active' : '' %>">Sets</a></li>
+                <li><a href="/admin" class="<%= typeof page !== 'undefined' && page === 'admin' ? 'active' : '' %>">Admin</a></li>
+            </ul>
+            <div class="search-box">
+                <form action="/search" method="GET">
+                    <input type="text" name="q" placeholder="Search galleries..." value="<%= typeof query !== 'undefined' ? query : '' %>">
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>Gallery Suite</h1>
+                <p>Professional offline media management for studios, models, and photo sets</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number"><%= stats.studios.count %></span>
+                    <span class="stat-label">Studios</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number"><%= stats.models.count %></span>
+                    <span class="stat-label">Models</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number"><%= stats.sets.count %></span>
+                    <span class="stat-label">Sets</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number"><%= stats.media.count %></span>
+                    <span class="stat-label">Media Files</span>
+                </div>
+            </div>
+
+            <% if (studios.length > 0) { %>
+            <div class="content-card">
+                <h2 class="section-title">Featured Studios</h2>
+                <div class="grid grid-3">
+                    <% studios.slice(0, 6).forEach(studio => { %>
+                    <div class="card">
+                        <% if (studio.logo_thumb_path) { %>
+                        <img src="/<%= studio.logo_thumb_path %>" alt="<%= studio.name %>" class="card-image">
+                        <% } else { %>
+                        <div class="card-image" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">
+                            <%= studio.name.substring(0, 2).toUpperCase() %>
+                        </div>
+                        <% } %>
+                        <div class="card-content">
+                            <h3 class="card-title"><%= studio.name %></h3>
+                            <div class="card-meta">
+                                <%= studio.model_count %> models • <%= studio.set_count %> sets
+                            </div>
+                            <% if (studio.description) { %>
+                            <p class="card-description"><%= studio.description.substring(0, 100) %>...</p>
+                            <% } %>
+                            <a href="/studios/<%= studio.slug %>" class="btn" style="margin-top: 1rem;">View Studio</a>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="/studios" class="btn btn-secondary">View All Studios</a>
+                </div>
+            </div>
+            <% } %>
+
+            <% if (models.length > 0) { %>
+            <div class="content-card">
+                <h2 class="section-title">Featured Models</h2>
+                <div class="grid grid-4 model-grid">
+                    <% models.forEach(model => { %>
+                    <div class="card">
+                        <% if (model.profile_thumb_path) { %>
+                        <img src="/<%= model.profile_thumb_path %>" alt="<%= model.name %>" class="card-image">
+                        <% } else { %>
+                        <div class="card-image" style="background: linear-gradient(45deg, #764ba2, #667eea); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; font-weight: bold;">
+                            <%= model.name.substring(0, 2).toUpperCase() %>
+                        </div>
+                        <% } %>
+                        <div class="card-content">
+                            <h3 class="card-title"><%= model.name %></h3>
+                            <div class="card-meta">
+                                <% if (model.studio_name) { %>
+                                <%= model.studio_name %> • 
+                                <% } %>
+                                <%= model.set_count %> sets
+                            </div>
+                            <a href="/models/<%= model.slug %>" class="btn" style="margin-top: 1rem;">View Profile</a>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="/models" class="btn btn-secondary">View All Models</a>
+                </div>
+            </div>
+            <% } %>
+
+            <% if (recentSets.length > 0) { %>
+            <div class="content-card">
+                <h2 class="section-title">Recent Sets</h2>
+                <div class="grid grid-3 set-grid">
+                    <% recentSets.forEach(set => { %>
+                    <div class="card">
+                        <% if (set.cover_thumb_path) { %>
+                        <img src="/<%= set.cover_thumb_path %>" alt="<%= set.name %>" class="card-image">
+                        <% } else { %>
+                        <div class="card-image" style="background: linear-gradient(45deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; font-weight: bold;">
+                            <%= set.name.substring(0, 3).toUpperCase() %>
+                        </div>
+                        <% } %>
+                        <div class="card-content">
+                            <h3 class="card-title"><%= set.name %></h3>
+                            <div class="card-meta">
+                                <a href="/models/<%= set.model_slug %>"><%= set.model_name %></a>
+                                <% if (set.studio_name) { %>
+                                • <a href="/studios/<%= set.studio_slug %>"><%= set.studio_name %></a>
+                                <% } %>
+                            </div>
+                            <div class="card-meta">
+                                <%= set.image_count || 0 %> images • <%= set.video_count || 0 %> videos
+                            </div>
+                            <a href="/sets/<%= set.slug %>" class="btn" style="margin-top: 1rem;">View Set</a>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="/sets" class="btn btn-secondary">View All Sets</a>
+                </div>
+            </div>
+            <% } %>
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Gallery Suite - Offline Media Management System</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple search enhancement
+        document.querySelector('.search-box input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+
+        // Card hover effects
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
