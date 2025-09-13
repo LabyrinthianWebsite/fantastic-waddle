@@ -85,6 +85,10 @@ typings/
 *.db
 *.db-journal
 
+# Data directory (persistent storage)
+data/*
+!data/.gitkeep
+
 # Uploads directory (but not the structure)
 uploads/**/*
 !uploads/.gitkeep

@@ -166,7 +166,17 @@ Additional computed stats queries aggregate top usage across commissions.
 
 ## 7. Running the Application
 
-Production-Style (local hardened):
+### Database Location
+By default, the application creates SQLite databases in a `./data/` directory to persist data across code updates. This ensures that pulling new code or PRs won't overwrite your existing database.
+
+**Configuration Options:**
+- Default location: `./data/` (created automatically)
+- Custom location: Set the `DATA_DIR` environment variable
+  ```bash
+  DATA_DIR=/path/to/your/data node server.js
+  ```
+
+### Production-Style (local hardened):
 - Ensure SESSION_SECRET (if implemented) is set.
 - Run with:
   NODE_ENV=production PORT=3000 node server.js
@@ -196,7 +206,9 @@ Optional Tools:
 │  ├─ public.js          # Public / browsing routes
 │  └─ admin.js           # Admin / CRUD & import routes
 ├─ middleware/           # Slug generator, auth helpers (inferred)
-├─ data/ or root *.db    # SQLite database file (inferred; confirm actual path)
+├─ data/                  # SQLite database files (persistent storage)
+│  ├─ gallery.db          # Main gallery database
+│  └─ commissions.db      # Commission data (if using base Database class)
 ├─ README.md
 ├─ package.json
 └─ server.js / app.js    # Express bootstrap (check actual entry file)
@@ -206,12 +218,15 @@ Optional Tools:
 ## 9. Backups & Data Management
 
 Because this is a local-first app:
-- Database: Backup the SQLite database file regularly (e.g., commission.db).
-- Uploads: Mirror the entire /uploads directory to preserve images and attachments.
-- Version Control: Exclude large binary uploads from Git (confirm .gitignore includes /uploads).
-- Recommended backup strategy:
-  - Daily incremental copy of DB file
-  - Weekly full compressed archive of DB + uploads
+- **Database**: Backup the SQLite database files in the `./data/` directory regularly. The application creates:
+  - `data/gallery.db` - Main gallery database
+  - `data/commissions.db` - Commission data (if using base Database class)
+- **Uploads**: Mirror the entire `/uploads` directory to preserve images and attachments.
+- **Version Control**: Database files are excluded from Git to prevent overwrites during code updates.
+- **Recommended backup strategy**:
+  - Daily incremental copy of the entire `data/` directory
+  - Weekly full compressed archive of `data/` + `uploads/`
+  - Use the built-in backup manager accessible through the admin interface
 
 ---
 

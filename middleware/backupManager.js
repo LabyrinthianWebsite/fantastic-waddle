@@ -43,10 +43,10 @@ class BackupManager {
         archive.on('error', reject);
         archive.pipe(output);
 
-        // Add database file
-        const dbPath = path.join(__dirname, '../database/commissions.db');
+        // Add database file - use the actual path from the database instance
+        const dbPath = this.db.dbPath;
         if (fs.existsSync(dbPath)) {
-          archive.file(dbPath, { name: 'database/commissions.db' });
+          archive.file(dbPath, { name: path.basename(dbPath) });
         }
 
         // Add configuration and important files

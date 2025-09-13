@@ -4,7 +4,9 @@ const fs = require('fs-extra');
 
 class Database {
   constructor() {
-    this.dbPath = path.join(__dirname, '../database/commissions.db');
+    // Use DATA_DIR environment variable or default to './data' directory
+    const dataDir = process.env.DATA_DIR || path.join(__dirname, '../data');
+    this.dbPath = path.join(dataDir, 'commissions.db');
     this.db = null;
   }
 

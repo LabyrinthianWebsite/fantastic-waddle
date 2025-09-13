@@ -3,8 +3,10 @@ const Database = require('./database');
 class GalleryDatabase extends Database {
   constructor() {
     super();
+    // Use DATA_DIR environment variable or default to './data' directory
+    const dataDir = process.env.DATA_DIR || require('path').join(__dirname, '../data');
     // Update the database path for the gallery
-    this.dbPath = require('path').join(__dirname, '../database/gallery.db');
+    this.dbPath = require('path').join(dataDir, 'gallery.db');
   }
 
   async createTables() {

@@ -3,7 +3,13 @@ const path = require('path');
 
 class ColorMigration {
   constructor(dbPath) {
-    this.dbPath = dbPath || path.join(__dirname, '../database/commissions.db');
+    if (!dbPath) {
+      // Use DATA_DIR environment variable or default to './data' directory
+      const dataDir = process.env.DATA_DIR || path.join(__dirname, '../data');
+      this.dbPath = path.join(dataDir, 'commissions.db');
+    } else {
+      this.dbPath = dbPath;
+    }
   }
 
   async run() {
