@@ -5,16 +5,16 @@ const fs = require('fs-extra');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
-const EnhancedDatabase = require('./database/enhancedDatabase');
+const GalleryDatabase = require('./database/galleryDatabase');
 const CacheManager = require('./middleware/cacheManager');
 const BackupManager = require('./middleware/backupManager');
 const EnhancedImageProcessor = require('./middleware/enhancedImageProcessor');
 
 const app = express();
-const PORT = process.env.PORT || 5173;
+const PORT = process.env.PORT || 6969;
 
-// Initialize enhanced database and services
-const db = new EnhancedDatabase();
+// Initialize gallery database and services
+const db = new GalleryDatabase();
 const cacheManager = new CacheManager();
 const imageProcessor = new EnhancedImageProcessor();
 
@@ -89,9 +89,9 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Body parsing middleware
-app.use(express.json({ limit: '2gb' }));
-app.use(express.urlencoded({ extended: true, limit: '2gb' }));
+// Body parsing middleware with increased limits for large uploads
+app.use(express.json({ limit: '50gb' }));
+app.use(express.urlencoded({ extended: true, limit: '50gb' }));
 
 // Static file serving
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -131,18 +131,14 @@ const requireAuth = (req, res, next) => {
 };
 
 // Import routes
-const publicRoutes = require('./routes/public');
-const adminRoutes = require('./routes/admin');
-const apiRoutes = require('./routes/api');
+const galleryRoutes = require('./routes/gallery');
+const galleryAdminRoutes = require('./routes/gallery-admin');
 const setupRoutes = require('./routes/setup');
-const enhancedRoutes = require('./routes/enhanced');
 
 // Route handlers
 app.use('/setup', setupRoutes);
-app.use('/admin', adminRoutes);
-app.use('/api', apiRoutes);
-app.use('/enhanced', enhancedRoutes);
-app.use('/', publicRoutes);
+app.use('/admin', galleryAdminRoutes);
+app.use('/', galleryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
