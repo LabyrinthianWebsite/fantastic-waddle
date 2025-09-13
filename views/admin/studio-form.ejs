@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* Main content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form */
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-file {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .form-file:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .form-help {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Error messages */
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* File preview */
+        .file-preview {
+            margin-top: 1rem;
+        }
+
+        .file-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Grid layout for form sections */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite Admin</a>
+            <ul class="nav-links">
+                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="/admin/studios" class="active">Studios</a></li>
+                <li><a href="/admin/models">Models</a></li>
+                <li><a href="/admin/sets">Sets</a></li>
+            </ul>
+            <div class="user-menu">
+                <span>Welcome, Admin</span>
+                <a href="/admin/logout" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/admin">Dashboard</a> / <a href="/admin/studios">Studios</a> / <%= isEdit ? 'Edit' : 'Add New' %>
+            </div>
+
+            <div class="page-header">
+                <h1 class="page-title"><%= isEdit ? 'Edit Studio' : 'Add New Studio' %></h1>
+                <p class="page-subtitle">
+                    <%= isEdit ? 'Update studio information and settings' : 'Create a new studio to organize your content producers' %>
+                </p>
+            </div>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error">
+                <%= error %>
+            </div>
+            <% } %>
+
+            <div class="form-card">
+                <form action="<%= isEdit ? `/admin/studios/${studio.id}` : '/admin/studios' %>" method="POST" enctype="multipart/form-data">
+                    <% if (isEdit) { %>
+                    <input type="hidden" name="_method" value="PUT">
+                    <% } %>
+
+                    <div class="form-group">
+                        <label for="name" class="form-label">Studio Name *</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            class="form-input" 
+                            value="<%= studio.name || '' %>" 
+                            placeholder="Enter studio name"
+                            required
+                        >
+                        <div class="form-help">The official name of the studio or content producer</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            class="form-textarea" 
+                            placeholder="Brief description of the studio, their style, or specialties"
+                        ><%= studio.description || '' %></textarea>
+                        <div class="form-help">Optional description about the studio's work and style</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="location" class="form-label">Location</label>
+                            <input 
+                                type="text" 
+                                id="location" 
+                                name="location" 
+                                class="form-input" 
+                                value="<%= studio.location || '' %>" 
+                                placeholder="City, Country"
+                            >
+                            <div class="form-help">Where the studio is based</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="established_date" class="form-label">Established</label>
+                            <input 
+                                type="text" 
+                                id="established_date" 
+                                name="established_date" 
+                                class="form-input" 
+                                value="<%= studio.established_date || '' %>" 
+                                placeholder="Year or YYYY-MM"
+                            >
+                            <div class="form-help">When the studio was founded</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="website_url" class="form-label">Website URL</label>
+                        <input 
+                            type="url" 
+                            id="website_url" 
+                            name="website_url" 
+                            class="form-input" 
+                            value="<%= studio.website_url || '' %>" 
+                            placeholder="https://studio-website.com"
+                        >
+                        <div class="form-help">Official website or portfolio link</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="logo" class="form-label">Studio Logo</label>
+                        <input 
+                            type="file" 
+                            id="logo" 
+                            name="logo" 
+                            class="form-file" 
+                            accept="image/*"
+                            onchange="previewFile(this)"
+                        >
+                        <div class="form-help">Upload a logo image for the studio (JPG, PNG, GIF)</div>
+                        
+                        <% if (studio.logo_thumb_path) { %>
+                        <div class="file-preview">
+                            <p><strong>Current logo:</strong></p>
+                            <img src="/<%= studio.logo_thumb_path %>" alt="Current logo">
+                        </div>
+                        <% } %>
+                        
+                        <div id="logo-preview" class="file-preview" style="display: none;">
+                            <p><strong>New logo preview:</strong></p>
+                            <img id="logo-preview-img" src="" alt="Logo preview">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/admin/studios" class="btn btn-secondary">Cancel</a>
+                        <% if (isEdit) { %>
+                        <button type="button" onclick="deleteStudio()" class="btn btn-danger">Delete Studio</button>
+                        <% } %>
+                        <button type="submit" class="btn">
+                            <%= isEdit ? 'Update Studio' : 'Create Studio' %>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function previewFile(input) {
+            const file = input.files[0];
+            const preview = document.getElementById('logo-preview');
+            const previewImg = document.getElementById('logo-preview-img');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        <% if (isEdit) { %>
+        function deleteStudio() {
+            if (confirm('Are you sure you want to delete this studio? This will also delete all associated models and sets. This action cannot be undone.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/studios/<%= studio.id %>';
+                
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                
+                form.appendChild(methodInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        <% } %>
+
+        // Auto-generate slug preview
+        document.getElementById('name').addEventListener('input', function() {
+            const name = this.value;
+            const slug = name.toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+            
+            // You could show a slug preview here if needed
+        });
+    </script>
+</body>
+</html>

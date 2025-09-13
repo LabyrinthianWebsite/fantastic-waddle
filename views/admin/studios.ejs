@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* Main content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: #333;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Content */
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Studio cards */
+        .studios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .studio-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .studio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .studio-logo {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .studio-logo-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .studio-content {
+            padding: 1.5rem;
+        }
+
+        .studio-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .studio-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .studio-description {
+            color: #777;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .studio-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .empty-state p {
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .studios-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite Admin</a>
+            <ul class="nav-links">
+                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="/admin/studios" class="active">Studios</a></li>
+                <li><a href="/admin/models">Models</a></li>
+                <li><a href="/admin/sets">Sets</a></li>
+            </ul>
+            <div class="user-menu">
+                <span>Welcome, Admin</span>
+                <a href="/admin/logout" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Studios</h1>
+                <a href="/admin/studios/new" class="btn">Add New Studio</a>
+            </div>
+
+            <% if (studios.length === 0) { %>
+            <div class="content-card">
+                <div class="empty-state">
+                    <div class="empty-icon">🏢</div>
+                    <h3>No Studios Yet</h3>
+                    <p>Studios are the top-level organization for your content. Get started by adding your first studio.</p>
+                    <a href="/admin/studios/new" class="btn">Create First Studio</a>
+                </div>
+            </div>
+            <% } else { %>
+            <div class="studios-grid">
+                <% studios.forEach(studio => { %>
+                <div class="studio-card">
+                    <% if (studio.logo_thumb_path) { %>
+                    <img src="/<%= studio.logo_thumb_path %>" alt="<%= studio.name %>" class="studio-logo">
+                    <% } else { %>
+                    <div class="studio-logo-placeholder">
+                        <%= studio.name.substring(0, 2).toUpperCase() %>
+                    </div>
+                    <% } %>
+                    
+                    <div class="studio-content">
+                        <h3 class="studio-name"><%= studio.name %></h3>
+                        <div class="studio-meta">
+                            <%= studio.model_count %> models • <%= studio.set_count %> sets
+                            <% if (studio.location) { %>
+                            • <%= studio.location %>
+                            <% } %>
+                        </div>
+                        
+                        <% if (studio.description) { %>
+                        <div class="studio-description">
+                            <%= studio.description.length > 100 ? studio.description.substring(0, 100) + '...' : studio.description %>
+                        </div>
+                        <% } %>
+                        
+                        <div class="studio-actions">
+                            <a href="/studios/<%= studio.slug %>" class="btn btn-sm btn-secondary">View</a>
+                            <a href="/admin/studios/<%= studio.id %>/edit" class="btn btn-sm">Edit</a>
+                            <button onclick="deleteStudio(<%= studio.id %>, '<%= studio.name %>')" class="btn btn-sm btn-danger">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        function deleteStudio(id, name) {
+            if (confirm(`Are you sure you want to delete the studio "${name}"? This will also delete all associated models and sets.`)) {
+                fetch(`/admin/studios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to delete studio');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete studio');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -195,9 +195,12 @@ router.post('/studios', requireAuth, upload.single('logo'), async (req, res) => 
 router.get('/models', requireAuth, async (req, res) => {
   try {
     const models = await req.db.getModels();
+    const studios = await req.db.all('SELECT * FROM studios ORDER BY name');
     res.render('admin/models', {
       title: 'Manage Models - Admin - Gallery Suite',
-      models: models
+      models: models,
+      studios: studios,
+      selectedStudio: null
     });
   } catch (error) {
     console.error('Models management error:', error);
