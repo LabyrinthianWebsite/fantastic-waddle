@@ -82,6 +82,7 @@ typings/
 .dynamodb/
 
 # Database files
+*.db
 *.db-journal
 
 # Uploads directory (but not the structure)
