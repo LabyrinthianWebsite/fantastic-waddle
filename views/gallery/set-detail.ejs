@@ -280,6 +280,13 @@
         .media-meta {
             color: #666;
             font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .media-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -344,6 +351,144 @@
             .tags-list {
                 justify-content: center;
             }
+        }
+
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .lightbox-image {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        .lightbox-info {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .lightbox-filename {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .lightbox-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            z-index: 1001;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            z-index: 1001;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .lightbox-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1001;
+        }
+
+        /* Media item hover effect for clickable indication */
+        .media-item {
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .media-item:hover .media-preview {
+            transform: scale(1.02);
         }
     </style>
 </head>
@@ -426,11 +571,19 @@
                     <p class="section-subtitle">Browse all media in this set</p>
                 </div>
                 <div class="media-grid">
-                    <% media.forEach(item => { %>
-                        <div class="media-item">
+                    <% media.forEach((item, index) => { %>
+                        <div class="media-item" 
+                             onclick="openLightbox(<%= index %>)" 
+                             data-index="<%= index %>"
+                             data-filename="<%= item.filename || 'Untitled' %>"
+                             data-full-path="/<%= item.display_path %>"
+                             data-thumb-path="/<%= item.thumb_path || item.display_path %>"
+                             data-file-type="<%= item.file_type %>"
+                             data-file-size="<%= item.filesize ? Math.round(item.filesize / 1024) : '' %>"
+                             data-created="<%= item.created_at ? new Date(item.created_at).toLocaleDateString() : '' %>">
                             <div class="media-preview">
-                                <% if (item.thumbnail_path || item.file_path) { %>
-                                    <img src="<%= item.thumbnail_path || item.file_path %>" alt="<%= item.filename || 'Media item' %>">
+                                <% if (item.thumb_path || item.display_path) { %>
+                                    <img src="/<%= item.thumb_path || item.display_path %>" alt="<%= item.filename || 'Media item' %>" loading="lazy">
                                 <% } else { %>
                                     🎬 <%= item.filename || 'Media' %>
                                 <% } %>
@@ -443,16 +596,19 @@
                             <div class="media-info">
                                 <div class="media-filename"><%= item.filename || 'Untitled' %></div>
                                 <div class="media-meta">
-                                    <% if (item.file_size) { %>
-                                        Size: <%= Math.round(item.file_size / 1024) %> KB
+                                    <% if (item.filesize) { %>
+                                        Size: <%= Math.round(item.filesize / 1024) %> KB
                                     <% } %>
                                     <% if (item.created_at) { %>
                                         • <%= new Date(item.created_at).toLocaleDateString() %>
                                     <% } %>
                                 </div>
-                                <% if (item.file_path) { %>
-                                    <a href="<%= item.file_path %>" class="btn btn-primary" target="_blank">View</a>
-                                <% } %>
+                                <div class="media-actions">
+                                    <button onclick="event.stopPropagation(); openLightbox(<%= index %>)" class="btn btn-primary">View</button>
+                                    <% if (item.display_path) { %>
+                                        <a href="/<%= item.display_path %>" class="btn btn-primary" target="_blank" onclick="event.stopPropagation()">Download</a>
+                                    <% } %>
+                                </div>
                             </div>
                         </div>
                     <% }); %>
@@ -466,5 +622,115 @@
             <% } %>
         </div>
     </main>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&#8249;</button>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&#8250;</button>
+            <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            <div class="lightbox-info">
+                <div id="lightbox-filename" class="lightbox-filename"></div>
+                <div id="lightbox-meta" class="lightbox-meta"></div>
+            </div>
+            <div id="lightbox-counter" class="lightbox-counter"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentImageIndex = 0;
+        let mediaItems = [];
+
+        // Initialize media items data from the page
+        document.addEventListener('DOMContentLoaded', function() {
+            const mediaElements = document.querySelectorAll('.media-item[data-index]');
+            mediaItems = Array.from(mediaElements).map(el => ({
+                index: parseInt(el.dataset.index),
+                filename: el.dataset.filename,
+                fullPath: el.dataset.fullPath,
+                thumbPath: el.dataset.thumbPath,
+                fileType: el.dataset.fileType,
+                fileSize: el.dataset.fileSize,
+                created: el.dataset.created
+            }));
+        });
+
+        function openLightbox(index) {
+            if (index < 0 || index >= mediaItems.length) return;
+            
+            currentImageIndex = index;
+            const item = mediaItems[index];
+            
+            const lightbox = document.getElementById('lightbox');
+            const image = document.getElementById('lightbox-image');
+            const filename = document.getElementById('lightbox-filename');
+            const meta = document.getElementById('lightbox-meta');
+            const counter = document.getElementById('lightbox-counter');
+            const prevBtn = document.querySelector('.lightbox-prev');
+            const nextBtn = document.querySelector('.lightbox-next');
+            
+            // Set image and content
+            image.src = item.fullPath;
+            image.alt = item.filename;
+            filename.textContent = item.filename;
+            
+            // Set meta information
+            let metaText = '';
+            if (item.fileSize) metaText += `Size: ${item.fileSize} KB`;
+            if (item.created) metaText += (metaText ? ' • ' : '') + item.created;
+            if (item.fileType) metaText += (metaText ? ' • ' : '') + item.fileType.toUpperCase();
+            meta.textContent = metaText;
+            
+            // Set counter
+            counter.textContent = `${index + 1} of ${mediaItems.length}`;
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === mediaItems.length - 1;
+            
+            // Show lightbox
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = currentImageIndex + direction;
+            if (newIndex >= 0 && newIndex < mediaItems.length) {
+                openLightbox(newIndex);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    navigateLightbox(-1);
+                    break;
+                case 'ArrowRight':
+                    navigateLightbox(1);
+                    break;
+            }
+        });
+
+        // Close lightbox when clicking outside the content
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
+    </script>
 </body>
 </html>
