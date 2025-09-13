@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .breadcrumb {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        .studio-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .studio-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .studio-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .studio-description {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .studio-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .meta-value a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .meta-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* Models Section */
+        .models-section {
+            margin-top: 3rem;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .model-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            position: relative;
+        }
+
+        .model-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-info {
+            padding: 1.5rem;
+        }
+
+        .model-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .model-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .model-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">Gallery Suite</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/studios">Studios</a></li>
+                    <li><a href="/models">Models</a></li>
+                    <li><a href="/sets">Sets</a></li>
+                    <li><a href="/admin">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/">Home</a> / <a href="/studios">Studios</a> / <%= studio.name %>
+            </div>
+
+            <div class="studio-header">
+                <div class="studio-logo">
+                    <% if (studio.logo_path) { %>
+                        <img src="<%= studio.logo_path %>" alt="<%= studio.name %>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <% } else { %>
+                        <%= studio.name.charAt(0).toUpperCase() %>
+                    <% } %>
+                </div>
+                
+                <h1 class="studio-title"><%= studio.name %></h1>
+                
+                <% if (studio.description) { %>
+                    <p class="studio-description"><%= studio.description %></p>
+                <% } %>
+
+                <div class="studio-meta">
+                    <% if (studio.established_date) { %>
+                        <div class="meta-item">
+                            <div class="meta-label">Established</div>
+                            <div class="meta-value"><%= studio.established_date %></div>
+                        </div>
+                    <% } %>
+                    
+                    <% if (studio.location) { %>
+                        <div class="meta-item">
+                            <div class="meta-label">Location</div>
+                            <div class="meta-value"><%= studio.location %></div>
+                        </div>
+                    <% } %>
+                    
+                    <% if (studio.website_url) { %>
+                        <div class="meta-item">
+                            <div class="meta-label">Website</div>
+                            <div class="meta-value">
+                                <a href="<%= studio.website_url %>" target="_blank">Visit Website</a>
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                    <div class="meta-item">
+                        <div class="meta-label">Models</div>
+                        <div class="meta-value"><%= models ? models.length : 0 %></div>
+                    </div>
+                </div>
+            </div>
+
+            <% if (models && models.length > 0) { %>
+                <div class="models-section">
+                    <h2 class="section-title">Models</h2>
+                    <div class="models-grid">
+                        <% models.forEach(model => { %>
+                            <div class="model-card">
+                                <div class="model-image">
+                                    <% if (model.profile_image_path) { %>
+                                        <img src="<%= model.profile_image_path %>" alt="<%= model.name %>">
+                                    <% } else { %>
+                                        <span>No Image</span>
+                                    <% } %>
+                                </div>
+                                <div class="model-info">
+                                    <div class="model-name"><%= model.name %></div>
+                                    <% if (model.description) { %>
+                                        <div class="model-description"><%= model.description.substring(0, 100) %><% if (model.description.length > 100) { %>...<% } %></div>
+                                    <% } %>
+                                    <div class="model-stats">
+                                        <span>ID: <%= model.id %></span>
+                                        <a href="/models/<%= model.slug %>" class="btn">View Profile</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    <h2>No Models Found</h2>
+                    <p>This studio doesn't have any models registered yet.</p>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>
