@@ -198,3 +198,11 @@
 2025-09-13T13:59:59.574Z GET /sets/new 200 0b 3ms
 2025-09-13T14:00:18.139Z POST /sets 302 49b 5ms
 2025-09-13T14:00:18.145Z GET /sets/1/upload 200 0b 3ms
+2025-09-13T14:01:41.790Z POST /sets/1/upload 200 210b 67ms
+2025-09-13T14:01:54.032Z GET /sets 200 0b 24ms
+2025-09-13T14:01:59.944Z GET /sets/test-photo-set 200 0b 6ms
+2025-09-13T14:02:07.081Z GET /sets/uploads/media/test-photo-set/blue_image.jpg 404 0b 2ms
+2025-09-13T14:02:15.961Z GET /sets/uploads/media/test-photo-set/green_image.jpg 404 0b 1ms
+2025-09-13T14:02:23.728Z GET /sets/uploads/media/test-photo-set/red_image.jpg 404 0b 2ms
+2025-09-13T14:02:41.794Z GET /sets/uploads/media/test-photo-set/blue_image.jpg 404 0b 1ms
+2025-09-13T14:03:16.873Z GET /sets/test-photo-set 200 0b 12ms
