@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tags - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item active">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>Tags</h1>
+                <div class="admin-header-actions">
+                    <a href="/admin/tags/new" class="btn btn-solid">+ Add Tag</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <% if (tags.length === 0) { %>
+                    <div class="empty-state">
+                        <h3>No Tags Yet</h3>
+                        <p>Tags help categorize and organize your commissions.</p>
+                        <a href="/admin/tags/new" class="btn btn-solid">Create Your First Tag</a>
+                    </div>
+                <% } else { %>
+                    <div class="admin-grid">
+                        <% tags.forEach(tag => { %>
+                            <div class="admin-card tag-card">
+                                <div class="tag-info">
+                                    <h3 class="tag-name"><%= tag.name %></h3>
+                                    
+                                    <% if (tag.description) { %>
+                                        <p class="tag-description">
+                                            <%= tag.description.length > 100 ? 
+                                                tag.description.substring(0, 100) + '...' : 
+                                                tag.description %>
+                                        </p>
+                                    <% } %>
+                                    
+                                    <div class="tag-meta">
+                                        <span class="slug">Slug: <%= tag.slug %></span>
+                                        <% if (tag.created_at) { %>
+                                            <span class="created-date">Added: <%= new Date(tag.created_at).toLocaleDateString() %></span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                
+                                <div class="tag-actions">
+                                    <a href="/admin/tags/<%= tag.id %>/edit" class="btn btn-ghost btn-sm">Edit</a>
+                                    <form method="POST" action="/admin/tags/<%= tag.id %>/delete" style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete this tag? This action cannot be undone.')">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+
+    <style>
+    .tag-card {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .tag-info {
+        flex: 1;
+    }
+
+    .tag-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+    }
+
+    .tag-description {
+        color: var(--text-secondary);
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+    }
+
+    .tag-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .slug {
+        font-family: monospace;
+        background: var(--bg-secondary);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        width: fit-content;
+    }
+
+    .tag-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    @media (max-width: 768px) {
+        .admin-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .tag-actions {
+            flex-direction: column;
+        }
+    }
+    </style>
+</body>
+</html>

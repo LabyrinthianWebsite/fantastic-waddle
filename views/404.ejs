@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="error-container">
+        <div class="error-content">
+            <div class="error-icon">🔍</div>
+            <h1>404 - Page Not Found</h1>
+            <p>The page you're looking for doesn't exist.</p>
+            <p class="error-url">Requested: <%= url %></p>
+            <div class="error-actions">
+                <a href="/" class="btn btn-solid">Go Home</a>
+                <a href="/admin" class="btn btn-ghost">Admin Panel</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            padding: 2rem;
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .error-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .error-url {
+            font-family: monospace;
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .error-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</body>
+</html>

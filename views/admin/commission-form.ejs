@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= commission ? 'Edit' : 'Add' %> Commission - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1><%= commission ? 'Edit' : 'Add' %> Commission</h1>
+                <div class="admin-header-actions">
+                    <a href="/admin/commissions" class="btn btn-ghost">← Back to Commissions</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <% 
+                // Helper function to get field value
+                function getFieldValue(field) {
+                    if (commission) {
+                        return commission[field] || '';
+                    } else if (typeof formData !== 'undefined' && formData) {
+                        return formData[field] || '';
+                    }
+                    return '';
+                }
+                %>
+
+                <form method="POST" action="<%= commission ? `/admin/commissions/${commission.id}/edit` : '/admin/commissions' %>" enctype="multipart/form-data" class="commission-form">
+                    <div class="form-grid">
+                        <!-- Basic Information -->
+                        <div class="form-section">
+                            <h3>Basic Information</h3>
+                            
+                            <div class="form-group">
+                                <label for="title">Title *</label>
+                                <input type="text" id="title" name="title" value="<%= getFieldValue('title') %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" rows="4"><%= getFieldValue('description') %></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="date_month">Date (YYYY-MM) *</label>
+                                    <input type="text" id="date_month" name="date_month" value="<%= getFieldValue('date_month') %>" placeholder="2024-01" pattern="\d{4}-\d{2}" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="price">Price</label>
+                                    <input type="number" id="price" name="price" value="<%= getFieldValue('price') %>" step="0.01" min="0">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="score">Score</label>
+                                    <input type="number" id="score" name="score" value="<%= getFieldValue('score') %>" min="1" max="10">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="nsfw" <%= (commission && commission.nsfw) || (typeof formData !== 'undefined' && formData && formData.nsfw) ? 'checked' : '' %>>
+                                    NSFW Content
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Relationships -->
+                        <div class="form-section">
+                            <h3>Relationships</h3>
+                            
+                            <div class="form-group">
+                                <label for="artist_id">Artist</label>
+                                <div data-autocomplete="artist" data-placeholder="Start typing to search for an artist..." class="artist-autocomplete">
+                                    <select id="artist_id" name="artist_id" style="display: none;">
+                                        <option value="">Select an Artist</option>
+                                        <% artists.forEach(artist => { %>
+                                            <option value="<%= artist.id %>" <%= (commission && commission.artist_id == artist.id) || (typeof formData !== 'undefined' && formData && formData.artist_id == artist.id) ? 'selected' : '' %>>
+                                                <%= artist.name %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="collection_id">Collection</label>
+                                <select id="collection_id" name="collection_id">
+                                    <option value="">Select a Collection</option>
+                                    <% collections.forEach(collection => { %>
+                                        <option value="<%= collection.id %>" <%= (commission && commission.collection_id == collection.id) || (typeof formData !== 'undefined' && formData && formData.collection_id == collection.id) ? 'selected' : '' %>>
+                                            <%= collection.name %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="character_ids">Characters</label>
+                                <div data-autocomplete="character" data-multiple data-placeholder="Start typing to search for characters..." class="character-autocomplete">
+                                    <select id="character_ids" name="character_ids" multiple style="display: none;">
+                                        <% characters.forEach(character => { %>
+                                            <option value="<%= character.id %>" <%= (commission && commission.character_ids && commission.character_ids.includes(character.id)) ? 'selected' : '' %>>
+                                                <%= character.name %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <small class="form-help">Start typing to search and select multiple characters</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tag_names">Tags</label>
+                                <input type="text" id="tag_names" name="tag_names" value="<%= getFieldValue('tag_names') %>" placeholder="tag1, tag2, tag3">
+                                <small class="form-help">Comma-separated tag names</small>
+                            </div>
+                        </div>
+
+                        <!-- Images -->
+                        <div class="form-section">
+                            <h3>Images</h3>
+                            
+                            <div class="form-group">
+                                <label for="main_image">Main Image</label>
+                                
+                                <div class="enhanced-upload-zone main-image-zone" data-image-type="main">
+                                    <input type="file" id="main_image" name="main_image" accept="image/*" style="display: none;">
+                                    
+                                    <% if (commission && commission.main_image_thumb) { %>
+                                        <!-- Existing main image display -->
+                                        <div class="current-main-image">
+                                            <div class="main-image-display">
+                                                <img src="/uploads/<%= commission.main_image_display || commission.main_image_thumb %>" 
+                                                     alt="Current main image" 
+                                                     class="main-image-preview">
+                                                
+                                                <div class="main-image-actions">
+                                                    <button type="button" 
+                                                            class="slideshow-action-btn preview-btn" 
+                                                            title="Preview Full Size"
+                                                            onclick="showMainImagePreview('<%= commission.main_image_display || commission.main_image_thumb %>')">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                            <circle cx="12" cy="12" r="3"/>
+                                                        </svg>
+                                                    </button>
+                                                    <% if (commission.main_image_original) { %>
+                                                        <a href="/uploads/<%= commission.main_image_original %>" 
+                                                           target="_blank" 
+                                                           class="slideshow-action-btn download-btn" 
+                                                           title="View Original">
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                                <polyline points="7,10 12,15 17,10"/>
+                                                                <line x1="12" y1="15" x2="12" y2="3"/>
+                                                            </svg>
+                                                        </a>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="main-image-info">
+                                                <h4>Current Main Image</h4>
+                                                <p>Upload a new image to replace this one</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="replace-image-zone">
+                                            <div class="upload-drop-area main-upload" data-for="main_image">
+                                                <div class="upload-icon">
+                                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                        <polyline points="21,15 16,10 5,21"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="upload-text">
+                                                    <h4>Replace Main Image</h4>
+                                                    <p>Drop new image here or click to browse</p>
+                                                </div>
+                                                <button type="button" class="upload-browse-btn">Choose New Image</button>
+                                            </div>
+                                        </div>
+                                    <% } else { %>
+                                        <!-- New main image upload -->
+                                        <div class="upload-drop-area main-upload" data-for="main_image">
+                                            <div class="upload-icon">
+                                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                    <polyline points="21,15 16,10 5,21"/>
+                                                </svg>
+                                            </div>
+                                            
+                                            <div class="upload-text">
+                                                <h4>Upload Main Image</h4>
+                                                <p>This will be the primary display image for the commission</p>
+                                                <p class="upload-formats">Supports: JPG, PNG, GIF, WEBP</p>
+                                            </div>
+                                            
+                                            <button type="button" class="upload-browse-btn">Choose Image</button>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <!-- Main image preview container -->
+                                    <div class="main-image-preview-container" style="display: none;">
+                                        <div class="main-preview-header">
+                                            <h4>New Main Image</h4>
+                                            <button type="button" class="clear-main-selection">Remove</button>
+                                        </div>
+                                        <div class="main-preview-display">
+                                            <!-- Preview will be inserted here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gallery Images Manager -->
+                            <%- include('partials/image-manager', {
+                                title: 'Gallery Images',
+                                images: commission ? commission.existing_gallery_images : [],
+                                imageType: 'gallery',
+                                commission: commission,
+                                showUpload: true
+                            }) %>
+
+                            <!-- Draft Images Manager -->
+                            <%- include('partials/image-manager', {
+                                title: 'Draft Images',
+                                images: commission ? commission.existing_draft_images : [],
+                                imageType: 'draft',
+                                commission: commission,
+                                showUpload: true
+                            }) %>
+
+                            <!-- Files Manager -->
+                            <%- include('partials/image-manager', {
+                                title: 'Additional Files',
+                                images: commission ? commission.existing_files : [],
+                                imageType: 'files',
+                                commission: commission,
+                                showUpload: true
+                            }) %>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-solid">
+                            <%= commission ? 'Update' : 'Create' %> Commission
+                        </button>
+                        <a href="/admin/commissions" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <style>
+    .commission-form {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-section {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .form-section h3 {
+        margin: 0 0 1.5rem 0;
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .checkbox-label {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .form-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .form-help {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        padding-top: 2rem;
+        border-top: 2px solid var(--border);
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .alert-error {
+        background: rgba(244, 67, 54, 0.1);
+        border: 2px solid #f44336;
+        color: #f44336;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+    </style>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script src="/public/js/autocomplete.js"></script>
+    <script>
+        function showMainImagePreview(imagePath) {
+            const modal = document.createElement('div');
+            modal.className = 'image-preview-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="this.parentElement.remove()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <img src="/uploads/${imagePath}" alt="Preview" style="max-width: 90vw; max-height: 90vh; object-fit: contain;">
+                        <button class="modal-close" onclick="this.closest('.image-preview-modal').remove()">×</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const overlay = modal.querySelector('.modal-overlay');
+            overlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const content = modal.querySelector('.modal-content');
+            content.style.cssText = `
+                position: relative;
+                max-width: 90vw;
+                max-height: 90vh;
+            `;
+            
+            const closeBtn = modal.querySelector('.modal-close');
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: -40px;
+                right: 0;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 2rem;
+                cursor: pointer;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/novels" class="navbar-item">Novels</a>
+                <a href="/drafts" class="navbar-item">Drafts</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                </div>
+                
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="safe-mode-toggle" aria-label="Toggle safe mode">
+                        <span class="safe-mode-icon">🔒</span>
+                    </button>
+                </div>
+
+                <div class="navbar-item">
+                    <a href="/admin" class="btn btn-solid">Admin</a>
+                </div>
+
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="keyboard-help" aria-label="Keyboard shortcuts">
+                        <span>?</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+
+<div class="home-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Welcome to CommissionDB</h1>
+                <p class="hero-subtitle">Your comprehensive database for managing and discovering artwork commissions</p>
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🎨</span>
+                        <span>Browse Artwork</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">👤</span>
+                        <span>Discover Characters</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎭</span>
+                        <span>Find Artists</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <span>Track Statistics</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <% if (stats && stats.totalCommissions > 0) { %>
+                    <a href="#browse" class="btn btn-hero-primary">Start Browsing</a>
+                    <a href="/stats" class="btn btn-hero-secondary">View Stats</a>
+                <% } else { %>
+                    <a href="/admin" class="btn btn-hero-primary">Get Started</a>
+                    <a href="/admin/commissions/new" class="btn btn-hero-secondary">Add First Commission</a>
+                <% } %>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-shape-1"></div>
+            <div class="hero-shape-2"></div>
+            <div class="hero-shape-3"></div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Dashboard -->
+    <div class="stats-dashboard">
+        <div class="stats-summary">
+            <div class="stat-card stat-commissions">
+                <div class="stat-icon">🎨</div>
+                <div class="stat-content">
+                    <div class="stat-number"><%= stats ? stats.totalCommissions : 0 %></div>
+                    <div class="stat-label">Commissions</div>
+                </div>
+            </div>
+            <div class="stat-card stat-value">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <div class="stat-number">$<%= stats ? stats.totalPrice.toFixed(2) : '0.00' %></div>
+                    <div class="stat-label">Total Value</div>
+                </div>
+            </div>
+            <div class="stat-card stat-artists">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-number"><%= artists ? artists.length : 0 %></div>
+                    <div class="stat-label">Artists</div>
+                </div>
+            </div>
+            <div class="stat-card stat-characters">
+                <div class="stat-icon">🎭</div>
+                <div class="stat-content">
+                    <div class="stat-number"><%= stats ? stats.totalCharacters : 0 %></div>
+                    <div class="stat-label">Characters</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters Section -->
+    <div class="search-section" id="browse">
+        <div class="search-header">
+            <h2>Search & Filters</h2>
+            <button type="button" id="filters-toggle" class="btn btn-ghost" aria-label="Toggle filters">
+                <span id="filters-toggle-text">Hide Filters</span>
+                <span id="filters-toggle-icon">▲</span>
+            </button>
+        </div>
+        <div class="search-container" id="filters-container">
+            <form class="search-form" method="GET" action="/">
+                <div class="search-input-group">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="<%= filters.q %>" 
+                        placeholder="Search commissions..." 
+                        class="search-input"
+                        id="main-search"
+                    >
+                    <button type="submit" class="search-btn">Search</button>
+                </div>
+
+                <div class="filters-row">
+                    <!-- Artist Filter -->
+                    <div class="filter-group">
+                        <label for="artist_id">Artist:</label>
+                        <select name="artist_id" id="artist_id" class="filter-select">
+                            <option value="">All Artists</option>
+                            <% artists.forEach(artist => { %>
+                                <option value="<%= artist.id %>" <%= filters.artist_id == artist.id ? 'selected' : '' %>>
+                                    <%= artist.name %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <!-- Score Filter -->
+                    <div class="filter-group">
+                        <label for="min_score">Min Score:</label>
+                        <input 
+                            type="number" 
+                            name="min_score" 
+                            id="min_score" 
+                            value="<%= filters.min_score %>" 
+                            min="0" 
+                            max="100" 
+                            class="filter-input"
+                        >
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="max_score">Max Score:</label>
+                        <input 
+                            type="number" 
+                            name="max_score" 
+                            id="max_score" 
+                            value="<%= filters.max_score %>" 
+                            min="0" 
+                            max="100" 
+                            class="filter-input"
+                        >
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="filter-group">
+                        <label for="rating">Rating:</label>
+                        <select name="rating" id="rating" class="filter-select">
+                            <option value="">All</option>
+                            <option value="sfw" <%= filters.rating === 'sfw' ? 'selected' : '' %>>SFW</option>
+                            <option value="nsfw" <%= filters.rating === 'nsfw' ? 'selected' : '' %>>NSFW</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="filter-group">
+                        <label for="sort">Sort:</label>
+                        <select name="sort" id="sort" class="filter-select">
+                            <option value="date_desc" <%= filters.sort === 'date_desc' ? 'selected' : '' %>>Newest First</option>
+                            <option value="date_asc" <%= filters.sort === 'date_asc' ? 'selected' : '' %>>Oldest First</option>
+                            <option value="score_desc" <%= filters.sort === 'score_desc' ? 'selected' : '' %>>Score High-Low</option>
+                            <option value="score_asc" <%= filters.sort === 'score_asc' ? 'selected' : '' %>>Score Low-High</option>
+                            <option value="random" <%= filters.sort === 'random' ? 'selected' : '' %>>Random</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tags Section with Search -->
+                <div class="tags-characters-section">
+                    <div class="tags-section">
+                        <h3>Tags</h3>
+                        <div class="search-box">
+                            <input 
+                                type="text" 
+                                id="tag-search" 
+                                placeholder="Search tags..." 
+                                class="search-input small"
+                            >
+                        </div>
+                        <div class="tag-chips" id="tag-results">
+                            <% tags.slice(0, 20).forEach(tag => { %>
+                                <label class="tag-chip">
+                                    <input 
+                                        type="checkbox" 
+                                        name="tags[]" 
+                                        value="<%= tag.id %>" 
+                                        <%= (filters.tags || []).includes(String(tag.id)) ? 'checked' : '' %>
+                                    >
+                                    <span class="tag-chip-text"><%= tag.name %></span>
+                                </label>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <!-- Characters Section with Search -->
+                    <div class="characters-section">
+                        <h3>Characters</h3>
+                        <div class="search-box">
+                            <input 
+                                type="text" 
+                                id="character-search" 
+                                placeholder="Search characters..." 
+                                class="search-input small"
+                            >
+                        </div>
+                        <div class="character-chips" id="character-results">
+                            <% characters.slice(0, 20).forEach(character => { %>
+                                <label class="character-chip">
+                                    <input 
+                                        type="checkbox" 
+                                        name="character_ids[]" 
+                                        value="<%= character.id %>" 
+                                        <%= (filters.character_ids || []).includes(String(character.id)) ? 'checked' : '' %>
+                                    >
+                                    <div class="character-chip-content">
+                                        <img 
+                                            src="<%= character.portrait_thumb_path ? '/uploads/' + character.portrait_thumb_path : '/public/images/character-placeholder.jpg' %>" 
+                                            alt="<%= character.name %>" 
+                                            class="character-chip-image"
+                                        >
+                                        <span class="character-chip-text"><%= character.name %></span>
+                                    </div>
+                                </label>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Named Colors Section -->
+                <div class="named-colors-section">
+                    <h3>Search by Named Colors</h3>
+                    <div class="named-color-controls">
+                        <div class="search-box">
+                            <input 
+                                type="text" 
+                                id="named-color-search" 
+                                placeholder="Search colors like 'Red', 'Blue', etc." 
+                                class="search-input small"
+                            >
+                        </div>
+                        <button type="button" id="named-color-search-btn" class="btn btn-ghost btn-sm">
+                            Search Named Colors
+                        </button>
+                    </div>
+                    <div class="popular-named-colors" id="popular-named-colors">
+                        <!-- Popular named colors will be loaded here -->
+                    </div>
+                    <div class="named-color-results" id="named-color-results" style="display: none;">
+                        <!-- Named color search results will appear here -->
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-solid">Apply Filters</button>
+                    <a href="/" class="btn btn-ghost">Clear All</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Results Info -->
+    <div class="results-info">
+        <h2>
+            <%= pagination.count %> Commission<%= pagination.count !== 1 ? 's' : '' %>
+            <% if (filters.q) { %>
+                for "<%= filters.q %>"
+            <% } %>
+        </h2>
+        
+        <div class="results-meta">
+            Page <%= pagination.current %> of <%= pagination.total %>
+            (showing <%= Math.min(pagination.per_page, pagination.count) %> per page)
+        </div>
+    </div>
+
+    <!-- Commissions Grid -->
+    <div class="commissions-grid">
+        <% if (commissions.length === 0) { %>
+            <div class="no-results">
+                <div class="no-results-icon">🎨</div>
+                <h3>No commissions found</h3>
+                <p>Ready to start your collection? Add your first commission to get started!</p>
+                <div class="no-results-actions">
+                    <a href="/admin/commissions/new" class="btn btn-hero-primary">
+                        ✨ Add First Commission
+                    </a>
+                    <a href="/admin" class="btn btn-hero-secondary">
+                        🛠️ Go to Admin Panel
+                    </a>
+                </div>
+                <div class="no-results-suggestions">
+                    <h4>Getting Started Tips:</h4>
+                    <ul>
+                        <li>📁 Add artists and characters first for better organization</li>
+                        <li>🏷️ Use tags to categorize your commissions</li>
+                        <li>📊 Track scores and ratings to monitor your collection</li>
+                        <li>🎨 Browse by colors to find commissions with similar palettes</li>
+                    </ul>
+                </div>
+            </div>
+        <% } else { %>
+            <% commissions.forEach(commission => { %>
+                <div class="commission-card" data-nsfw="<%= commission.nsfw ? 'true' : 'false' %>">
+                    <a href="/c/<%= commission.slug %>" class="commission-link">
+                        <div class="commission-image">
+                            <img 
+                                src="<%= commission.thumb_url %>" 
+                                alt="<%= commission.title %>"
+                                class="commission-thumb <% if (commission.nsfw) { %>nsfw-content<% } %>"
+                                loading="lazy"
+                            >
+                            <% if (commission.nsfw) { %>
+                                <div class="nsfw-overlay">NSFW</div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="commission-info">
+                            <h3 class="commission-title"><%= commission.title %></h3>
+                            <div class="commission-meta">
+                                <span class="commission-date"><%= commission.formatted_date %></span>
+                                <% if (commission.artist_name) { %>
+                                    <span class="commission-artist">
+                                        by <a href="/artists/<%= commission.artist_slug %>" class="artist-link"><%= commission.artist_name %></a>
+                                    </span>
+                                <% } %>
+                                <% if (commission.score) { %>
+                                    <span class="commission-score">⭐ <%= commission.score %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.total > 1) { %>
+    <div class="pagination">
+        <% if (pagination.current > 1) { %>
+            <a href="?<%= new URLSearchParams({...filters, page: pagination.current - 1}).toString() %>" class="pagination-link">
+                ← Previous
+            </a>
+        <% } %>
+        
+        <% for (let i = Math.max(1, pagination.current - 2); i <= Math.min(pagination.total, pagination.current + 2); i++) { %>
+            <% if (i === pagination.current) { %>
+                <span class="pagination-current"><%= i %></span>
+            <% } else { %>
+                <a href="?<%= new URLSearchParams({...filters, page: i}).toString() %>" class="pagination-link">
+                    <%= i %>
+                </a>
+            <% } %>
+        <% } %>
+        
+        <% if (pagination.current < pagination.total) { %>
+            <a href="?<%= new URLSearchParams({...filters, page: pagination.current + 1}).toString() %>" class="pagination-link">
+                Next →
+            </a>
+        <% } %>
+    </div>
+    <% } %>
+
+    <!-- Hot Tags -->
+    <% if (stats && stats.topTags && stats.topTags.length > 0) { %>
+    <div class="hot-tags-section">
+        <h3>Popular Tags</h3>
+        <div class="hot-tags">
+            <% stats.topTags.slice(0, 10).forEach(tag => { %>
+                <a href="/?tags[]=<%= tag.id %>" class="hot-tag">
+                    <%= tag.name %> (<%= tag.count %>)
+                </a>
+            <% }) %>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<script>
+// Enhanced search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Tag search
+    const tagSearch = document.getElementById('tag-search');
+    const tagResults = document.getElementById('tag-results');
+    
+    tagSearch.addEventListener('input', async function() {
+        const query = this.value;
+        if (query.length < 2) {
+            // Show default tags
+            location.reload();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/search?type=tags&q=${encodeURIComponent(query)}`);
+            const tags = await response.json();
+            
+            tagResults.innerHTML = tags.map(tag => `
+                <label class="tag-chip">
+                    <input type="checkbox" name="tags[]" value="${tag.id}">
+                    <span class="tag-chip-text">${tag.name} (${tag.commission_count})</span>
+                </label>
+            `).join('');
+        } catch (error) {
+            console.error('Error searching tags:', error);
+        }
+    });
+    
+    // Character search
+    const characterSearch = document.getElementById('character-search');
+    const characterResults = document.getElementById('character-results');
+    
+    characterSearch.addEventListener('input', async function() {
+        const query = this.value;
+        if (query.length < 2) {
+            // Show default characters
+            location.reload();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/search?type=characters&q=${encodeURIComponent(query)}`);
+            const characters = await response.json();
+            
+            characterResults.innerHTML = characters.map(character => `
+                <label class="character-chip">
+                    <input type="checkbox" name="character_ids[]" value="${character.id}">
+                    <div class="character-chip-content">
+                        <img 
+                            src="${character.portrait_url || '/public/images/character-placeholder.jpg'}" 
+                            alt="${character.name}" 
+                            class="character-chip-image"
+                        >
+                        <span class="character-chip-text">${character.name} (${character.commission_count})</span>
+                    </div>
+                </label>
+            `).join('');
+        } catch (error) {
+            console.error('Error searching characters:', error);
+        }
+    });
+    
+    // Named color search functionality
+    initNamedColorSearch();
+    loadPopularNamedColors();
+});
+
+
+
+
+// Initialize named color search functionality
+function initNamedColorSearch() {
+    const namedColorSearch = document.getElementById('named-color-search');
+    const namedColorSearchBtn = document.getElementById('named-color-search-btn');
+    const namedColorResults = document.getElementById('named-color-results');
+    
+    // Named color search
+    namedColorSearchBtn.addEventListener('click', performNamedColorSearch);
+    namedColorSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performNamedColorSearch();
+        }
+    });
+    
+    async function performNamedColorSearch() {
+        const colors = namedColorSearch.value.trim();
+        if (!colors) return;
+        
+        try {
+            namedColorSearchBtn.disabled = true;
+            namedColorSearchBtn.textContent = 'Searching...';
+            
+            const response = await fetch(`/api/search/named-colors?colors=${encodeURIComponent(colors)}`);
+            const results = await response.json();
+            
+            displayNamedColorResults(results, colors);
+            
+        } catch (error) {
+            console.error('Error searching by named colors:', error);
+            namedColorResults.innerHTML = '<p>Error searching by named colors. Please try again.</p>';
+            namedColorResults.style.display = 'block';
+        } finally {
+            namedColorSearchBtn.disabled = false;
+            namedColorSearchBtn.textContent = 'Search Named Colors';
+        }
+    }
+    
+    function displayNamedColorResults(results, searchColors) {
+        if (results.length === 0) {
+            namedColorResults.innerHTML = `
+                <div class="no-color-results">
+                    <p>No commissions found with colors: <strong>${searchColors}</strong></p>
+                    <p>Try different color names like 'Red', 'Blue', 'Green', 'Pink', etc.</p>
+                </div>
+            `;
+        } else {
+            namedColorResults.innerHTML = `
+                <div class="color-results-header">
+                    <h4>Found ${results.length} commission${results.length !== 1 ? 's' : ''} with colors: <strong>${searchColors}</strong></h4>
+                </div>
+                <div class="color-results-grid">
+                    ${results.map(commission => `
+                        <div class="commission-card small">
+                            <a href="/c/${commission.slug}" class="commission-link">
+                                <div class="commission-image">
+                                    <img 
+                                        src="${commission.thumb_url}" 
+                                        alt="${commission.title}"
+                                        class="commission-thumb"
+                                        loading="lazy"
+                                    >
+                                </div>
+                                <div class="commission-info">
+                                    <h5 class="commission-title">${commission.title}</h5>
+                                    <div class="commission-meta">
+                                        <span class="commission-date">${commission.formatted_date}</span>
+                                        ${commission.artist_name ? `<span class="commission-artist">by <a href="/artists/${commission.artist_slug}" class="artist-link">${commission.artist_name}</a></span>` : ''}
+                                    </div>
+                                    <div class="commission-key-colors">
+                                        ${commission.key_colors.map(color => `
+                                            <span class="key-color-tag" onclick="searchByNamedColor('${color}')">${color}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        namedColorResults.style.display = 'block';
+    }
+}
+
+async function loadPopularNamedColors() {
+    try {
+        const response = await fetch('/api/colors/named/popular?limit=10');
+        const colors = await response.json();
+        
+        const popularNamedColorsContainer = document.getElementById('popular-named-colors');
+        
+        if (colors.length > 0) {
+            popularNamedColorsContainer.innerHTML = `
+                <div class="popular-named-colors-header">
+                    <h4>Popular Named Colors</h4>
+                </div>
+                <div class="popular-named-colors-grid">
+                    ${colors.map(color => `
+                        <button 
+                            class="popular-named-color-chip" 
+                            onclick="searchByNamedColor('${color.color_name}')"
+                            title="${color.color_name} (${color.count} commissions)"
+                        >
+                            ${color.color_name}
+                            <span class="named-color-count">${color.count}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading popular named colors:', error);
+    }
+}
+
+function searchByNamedColor(colorName) {
+    const namedColorSearch = document.getElementById('named-color-search');
+    namedColorSearch.value = colorName;
+    
+    // Trigger search
+    document.getElementById('named-color-search-btn').click();
+}
+</script>
+
+    <!-- Keyboard Help Modal -->
+    <div id="keyboard-help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="keyboard-shortcuts">
+                    <div class="shortcut-item">
+                        <kbd>/</kbd>
+                        <span>Focus search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>a</kbd>
+                        <span>Go to Artists</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>t</kbd>
+                        <span>Go to Tags</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>c</kbd>
+                        <span>Go to Characters</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>ESC</kbd>
+                        <span>Close modals</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>←</kbd> <kbd>→</kbd>
+                        <span>Navigate lightbox</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" style="display: none;">
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Close">&times;</button>
+            <button class="lightbox-prev" aria-label="Previous">‹</button>
+            <button class="lightbox-next" aria-label="Next">›</button>
+            <img class="lightbox-image" src="" alt="">
+            <div class="lightbox-caption">
+                <p class="lightbox-filename"></p>
+                <a class="lightbox-original-link" href="" target="_blank">
+                    Click to View Full Image
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/js/app.js"></script>
+    <script>
+    // Filter toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtersToggle = document.getElementById('filters-toggle');
+        const filtersContainer = document.getElementById('filters-container');
+        const toggleText = document.getElementById('filters-toggle-text');
+        const toggleIcon = document.getElementById('filters-toggle-icon');
+        
+        // Load saved filter visibility preference
+        const filtersVisible = localStorage.getItem('filtersVisible') !== 'false';
+        
+        function updateFiltersVisibility(visible) {
+            if (visible) {
+                filtersContainer.style.display = 'block';
+                toggleText.textContent = 'Hide Filters';
+                toggleIcon.textContent = '▲';
+            } else {
+                filtersContainer.style.display = 'none';
+                toggleText.textContent = 'Show Filters';
+                toggleIcon.textContent = '▼';
+            }
+            localStorage.setItem('filtersVisible', visible);
+        }
+        
+        // Initialize filters visibility
+        updateFiltersVisibility(filtersVisible);
+        
+        // Toggle filters on button click
+        filtersToggle.addEventListener('click', function() {
+            const isVisible = filtersContainer.style.display !== 'none';
+            updateFiltersVisibility(!isVisible);
+        });
+    });
+    </script>
+
+    <style>
+        .artist-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .artist-link:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+
+        .named-colors-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .named-color-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .named-color-controls .search-box {
+            flex: 1;
+        }
+
+        .popular-named-colors-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .popular-named-color-chip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .popular-named-color-chip:hover {
+            background: var(--primary);
+            color: var(--bg);
+            transform: translateY(-1px);
+        }
+
+        .popular-named-color-chip .color-count {
+            background: var(--border);
+            color: var(--text-secondary);
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 400;
+        }
+
+        .popular-named-color-chip:hover .color-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--bg);
+        }
+
+        .commission-key-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .key-color-tag {
+            background: var(--bg-secondary);
+            color: var(--text);
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .key-color-tag:hover {
+            background: var(--primary);
+            color: var(--bg);
+            transform: scale(1.05);
+        }
+    </style>
+    </main>
+</body>
+</html>

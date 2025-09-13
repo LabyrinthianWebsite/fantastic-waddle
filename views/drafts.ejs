@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drafts - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/drafts" class="navbar-item active">Drafts</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Works in Progress</h1>
+            <p>Track the journey from concept to completion</p>
+        </div>
+
+        <% if (drafts.length === 0) { %>
+            <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <h2>No Active Drafts</h2>
+                <p>There are currently no works in progress being tracked.</p>
+            </div>
+        <% } else { %>
+            <div class="drafts-grid">
+                <% drafts.forEach(draft => { %>
+                    <div class="draft-card">
+                        <div class="draft-header">
+                            <h3 class="draft-title">
+                                <a href="/d/<%= draft.slug %>"><%= draft.title %></a>
+                            </h3>
+                            <span class="status-badge status-<%= draft.status %>">
+                                <%= draft.status.charAt(0).toUpperCase() + draft.status.slice(1).replace('_', ' ') %>
+                            </span>
+                        </div>
+
+                        <div class="draft-meta">
+                            <% if (draft.artist_name) { %>
+                                <div class="meta-item">
+                                    <span class="meta-label">Artist:</span>
+                                    <a href="/artists/<%= draft.artist_slug %>" class="meta-value"><%= draft.artist_name %></a>
+                                </div>
+                            <% } %>
+                            <% if (draft.client_name) { %>
+                                <div class="meta-item">
+                                    <span class="meta-label">Client:</span>
+                                    <span class="meta-value"><%= draft.client_name %></span>
+                                </div>
+                            <% } %>
+                            <% if (draft.formatted_date) { %>
+                                <div class="meta-item">
+                                    <span class="meta-label">Started:</span>
+                                    <span class="meta-value"><%= draft.formatted_date %></span>
+                                </div>
+                            <% } %>
+                            <% if (draft.deadline_date) { %>
+                                <div class="meta-item">
+                                    <span class="meta-label">Deadline:</span>
+                                    <span class="meta-value"><%= new Date(draft.deadline_date).toLocaleDateString() %></span>
+                                </div>
+                            <% } %>
+                            <% if (draft.price) { %>
+                                <div class="meta-item">
+                                    <span class="meta-label">Price:</span>
+                                    <span class="meta-value">$<%= draft.price %></span>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <% if (draft.description) { %>
+                            <p class="draft-description">
+                                <%= draft.description.length > 200 ? draft.description.substring(0, 200) + '...' : draft.description %>
+                            </p>
+                        <% } %>
+
+                        <div class="draft-footer">
+                            <a href="/d/<%= draft.slug %>" class="btn btn-outline">View Progress</a>
+                            <span class="updated-time">Updated <%= new Date(draft.updated_at).toLocaleDateString() %></span>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </main>
+
+    <style>
+    .content-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+
+    .content-header h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .content-header p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .drafts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 2rem;
+        padding: 0 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .draft-card {
+        background: var(--surface-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .draft-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .draft-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        gap: 1rem;
+    }
+
+    .draft-title a {
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .draft-title a:hover {
+        color: var(--accent-primary);
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .status-requested { background-color: #64748b; color: white; }
+    .status-accepted { background-color: #0ea5e9; color: white; }
+    .status-in-progress { background-color: #f59e0b; color: white; }
+    .status-completed { background-color: #10b981; color: white; }
+    .status-delivered { background-color: #8b5cf6; color: white; }
+
+    .draft-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--surface-secondary);
+        border-radius: 0.5rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .meta-value {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+    }
+
+    .meta-value a {
+        color: var(--accent-primary);
+        text-decoration: none;
+    }
+
+    .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    .draft-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .draft-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: auto;
+    }
+
+    .updated-time {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+    }
+
+    @media (max-width: 768px) {
+        .drafts-grid {
+            grid-template-columns: 1fr;
+            padding: 0 1rem;
+        }
+
+        .draft-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .draft-meta {
+            grid-template-columns: 1fr;
+        }
+
+        .draft-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+    </style>
+
+    <script src="/public/js/app.js"></script>
+</body>
+</html>

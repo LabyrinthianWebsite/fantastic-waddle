@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= character.name %> - Upper Campus Character - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item active">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1><%= character.name %></h1>
+                <div class="admin-header-actions">
+                    <a href="/admin/upper-campus" class="btn btn-ghost">← Back to Upper Campus</a>
+                    <a href="/admin/upper-campus/<%= character.id %>/edit" class="btn btn-solid">Edit Character</a>
+                    <a href="/admin/upper-campus/<%= character.id %>/works" class="btn btn-ghost">Manage Works</a>
+                </div>
+            </div>
+
+            <div class="character-detail">
+                <div class="character-detail-grid">
+                    <!-- Character Portrait and Basic Info -->
+                    <div class="character-portrait-section">
+                        <div class="character-portrait-large">
+                            <% if (character.portrait_thumb_path) { %>
+                                <img src="/uploads/<%= character.portrait_thumb_path %>" alt="<%= character.name %>" class="character-portrait-img">
+                            <% } else { %>
+                                <div class="character-portrait-placeholder">
+                                    <span><%= character.name.charAt(0).toUpperCase() %></span>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="character-basic-info">
+                            <% if (character.dormitory) { %>
+                                <div class="info-row">
+                                    <span class="info-label">Dormitory:</span>
+                                    <span 
+                                        class="dormitory-badge" 
+                                        <% if (character.dormitory_color) { %>style="background-color: <%= character.dormitory_color %>; color: white;"<% } %>
+                                    >
+                                        <%= character.dormitory %>
+                                        <% if (character.dormitory_animal) { %>
+                                            <sup class="dormitory-icon" title="<%= character.dormitory %>"><%= character.dormitory_animal %></sup>
+                                        <% } %>
+                                    </span>
+                                </div>
+                            <% } %>
+                            
+                            <% if (character.age_category) { %>
+                                <div class="info-row">
+                                    <span class="info-label">Age Category:</span>
+                                    <span class="age-badge"><%= character.age_category %></span>
+                                </div>
+                            <% } %>
+                            
+                            <% if (character.hair_color) { %>
+                                <div class="info-row">
+                                    <span class="info-label">Hair Color:</span>
+                                    <span><%= character.hair_color %></span>
+                                </div>
+                            <% } %>
+                            
+                            <% if (character.eye_color) { %>
+                                <div class="info-row">
+                                    <span class="info-label">Eye Color:</span>
+                                    <span><%= character.eye_color %></span>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Extended Character Information -->
+                    <div class="character-extended-info">
+                        <div class="info-section">
+                            <h3>Character Information</h3>
+                            
+                            <table class="character-info-table">
+                                <% if (character.aliases) { %>
+                                <tr>
+                                    <td class="field-label">Aliases:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.aliases.split(',').forEach(alias => { %>
+                                            <span class="tag"><%= alias.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.measurements) { %>
+                                <tr>
+                                    <td class="field-label">Measurements:</td>
+                                    <td class="field-value"><%= character.measurements %></td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.birthday) { %>
+                                <tr>
+                                    <td class="field-label">Birthday:</td>
+                                    <td class="field-value"><%= character.birthday %></td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.hair_attributes) { %>
+                                <tr>
+                                    <td class="field-label">Hair:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.hair_attributes.split(',').forEach(attr => { %>
+                                            <span class="tag"><%= attr.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.eye_attributes) { %>
+                                <tr>
+                                    <td class="field-label">Eyes:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.eye_attributes.split(',').forEach(attr => { %>
+                                            <span class="tag"><%= attr.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.body_features) { %>
+                                <tr>
+                                    <td class="field-label">Body:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.body_features.split(',').forEach(feature => { %>
+                                            <span class="tag"><%= feature.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.clothing_accessories) { %>
+                                <tr>
+                                    <td class="field-label">Clothes:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.clothing_accessories.split(',').forEach(item => { %>
+                                            <span class="tag"><%= item.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.personal_items) { %>
+                                <tr>
+                                    <td class="field-label">Items:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.personal_items.split(',').forEach(item => { %>
+                                            <span class="tag"><%= item.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.personality_traits) { %>
+                                <tr>
+                                    <td class="field-label">Personality:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.personality_traits.split(',').forEach(trait => { %>
+                                            <span class="tag"><%= trait.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.character_roles) { %>
+                                <tr>
+                                    <td class="field-label">Role:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.character_roles.split(',').forEach(role => { %>
+                                            <span class="tag"><%= role.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.activities_hobbies) { %>
+                                <tr>
+                                    <td class="field-label">Engages in:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.activities_hobbies.split(',').forEach(activity => { %>
+                                            <span class="tag"><%= activity.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.story_events) { %>
+                                <tr>
+                                    <td class="field-label">Subject of:</td>
+                                    <td class="field-value tags-list">
+                                        <% character.story_events.split(',').forEach(event => { %>
+                                            <span class="tag"><%= event.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.sexual_activities) { %>
+                                <tr>
+                                    <td class="field-label">Engages in (Sexual):</td>
+                                    <td class="field-value tags-list">
+                                        <% character.sexual_activities.split(',').forEach(activity => { %>
+                                            <span class="tag nsfw-tag"><%= activity.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                
+                                <% if (character.sexual_themes) { %>
+                                <tr>
+                                    <td class="field-label">Subject of (Sexual):</td>
+                                    <td class="field-value tags-list">
+                                        <% character.sexual_themes.split(',').forEach(theme => { %>
+                                            <span class="tag nsfw-tag"><%= theme.trim() %></span>
+                                        <% }) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </table>
+                        </div>
+                        
+                        <% if (character.description) { %>
+                        <div class="info-section">
+                            <h3>Description</h3>
+                            <div class="character-description">
+                                <%= character.description %>
+                            </div>
+                        </div>
+                        <% } %>
+                        
+                        <!-- Character Versions Section -->
+                        <div class="info-section">
+                            <h3>Character Versions <span class="section-subtitle">Different ages/appearances</span></h3>
+                            <div class="versions-section">
+                                <div class="version-hint">
+                                    <p>Add different versions of this character to handle age discrepancies across different media (e.g., "Alistair at 8 years old").</p>
+                                </div>
+                                
+                                <div class="version-actions">
+                                    <button class="btn btn-ghost btn-sm" onclick="showVersionModal()">+ Add Version</button>
+                                </div>
+                                
+                                <div class="versions-list" id="versions-list">
+                                    <!-- Character versions will be loaded here -->
+                                    <div class="no-versions">
+                                        <p>No character versions added yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <% if (works && works.length > 0) { %>
+                        <div class="info-section">
+                            <h3>Works This Character Has Been In</h3>
+                            <div class="works-list">
+                                <% works.forEach(work => { %>
+                                    <div class="work-item">
+                                        <% if (work.icon_path) { %>
+                                            <img src="/uploads/<%= work.icon_path %>" alt="<%= work.work_name %>" class="work-icon">
+                                        <% } %>
+                                        <div class="work-info">
+                                            <% if (work.external_url) { %>
+                                                <a href="<%= work.external_url %>" target="_blank" class="work-name"><%= work.work_name %></a>
+                                            <% } else { %>
+                                                <span class="work-name"><%= work.work_name %></span>
+                                            <% } %>
+                                            <span class="work-type"><%= work.work_type %></span>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <% if (images && images.length > 0) { %>
+                <div class="character-gallery-section">
+                    <h3>Character Gallery</h3>
+                    <div class="character-gallery">
+                        <% images.forEach(image => { %>
+                            <div class="gallery-item">
+                                <img src="/uploads/<%= image.thumb_path %>" alt="<%= image.filename %>" class="gallery-thumb">
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <!-- Character Version Modal -->
+    <div id="version-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Character Version</h3>
+                <button class="modal-close" onclick="hideVersionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="version-form" enctype="multipart/form-data">
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="version_name">Version Name *</label>
+                        <input 
+                            type="text" 
+                            id="version_name" 
+                            name="version_name" 
+                            class="admin-form-input" 
+                            placeholder="e.g., At 8 years old, Summer version, School uniform"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="date_period">Time Period</label>
+                        <input 
+                            type="text" 
+                            id="date_period" 
+                            name="date_period" 
+                            class="admin-form-input" 
+                            placeholder="e.g., Age 8, Year 2020, Summer 2019"
+                        >
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="version_portrait">Version Portrait</label>
+                        <input 
+                            type="file" 
+                            id="version_portrait" 
+                            name="portrait" 
+                            class="admin-form-input" 
+                            accept="image/*"
+                        >
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="version_description">Description</label>
+                        <textarea 
+                            id="version_description" 
+                            name="description" 
+                            class="admin-form-textarea" 
+                            rows="4"
+                            placeholder="Description of this version..."
+                        ></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-solid">Add Version</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideVersionModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .character-detail-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .character-portrait-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .character-portrait-large {
+        display: flex;
+        justify-content: center;
+    }
+
+    .character-portrait-img, .character-portrait-placeholder {
+        max-width: 200px;
+        max-height: 300px;
+        width: auto;
+        height: auto;
+        border-radius: 12px;
+        object-fit: contain;
+    }
+
+    .character-portrait-placeholder {
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .character-basic-info {
+        background: var(--card-bg);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .dormitory-badge, .age-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: var(--primary);
+        color: white;
+    }
+
+    .character-extended-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .info-section {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .info-section h3 {
+        margin: 0 0 1rem 0;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .character-info-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .character-info-table tr:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .field-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        padding: 0.75rem 1rem 0.75rem 0;
+        vertical-align: top;
+        min-width: 150px;
+    }
+
+    .field-value {
+        padding: 0.75rem 0;
+        color: var(--text-primary);
+    }
+
+    .tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tag {
+        background: var(--secondary);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .nsfw-tag {
+        background: var(--error);
+    }
+
+    .character-description {
+        line-height: 1.6;
+        color: var(--text-primary);
+    }
+
+    .works-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .work-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+    }
+
+    .work-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+
+    .work-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .work-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+
+    .work-name:hover {
+        color: var(--primary);
+    }
+
+    .work-type {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-transform: capitalize;
+    }
+
+    .character-gallery-section {
+        margin-top: 2rem;
+    }
+
+    .character-gallery-section h3 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .character-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .gallery-item {
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .gallery-thumb {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .gallery-thumb:hover {
+        transform: scale(1.05);
+    }
+
+    /* Character Versions Styling */
+    .versions-section {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .version-hint {
+        background: var(--card-bg);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .version-hint p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .version-actions {
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-weight: normal;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-left: 0.5rem;
+    }
+
+    .versions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .no-versions {
+        text-align: center;
+        padding: 1.5rem;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .version-item {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+    }
+
+    .version-item:hover {
+        border-color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .version-portrait {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid var(--border);
+    }
+
+    .version-info {
+        flex: 1;
+    }
+
+    .version-name {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: var(--text);
+    }
+
+    .version-period {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .version-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+
+    .version-actions-btn {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    /* Modal improvements */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: var(--card-bg);
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .character-detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .character-portrait-large {
+            justify-content: center;
+        }
+        
+        .character-portrait-img, .character-portrait-placeholder {
+            max-width: 150px;
+            max-height: 200px;
+        }
+    }
+    </style>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+    
+    <script>
+    function showVersionModal() {
+        document.getElementById('version-modal').style.display = 'flex';
+    }
+
+    function hideVersionModal() {
+        document.getElementById('version-modal').style.display = 'none';
+        document.getElementById('version-form').reset();
+    }
+
+    // Handle version form submission
+    document.getElementById('version-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const characterId = '<%= character.id %>';
+        
+        try {
+            const response = await fetch(`/admin/upper-campus/${characterId}/versions`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                hideVersionModal();
+                // Reload the page to show the new version
+                window.location.reload();
+            } else {
+                const error = await response.text();
+                alert('Error adding version: ' + error);
+            }
+        } catch (error) {
+            alert('Error adding version: ' + error.message);
+        }
+    });
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideVersionModal();
+        }
+    });
+
+    // Close modal on backdrop click
+    document.getElementById('version-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideVersionModal();
+        }
+    });
+    </script>
+</body>
+</html>

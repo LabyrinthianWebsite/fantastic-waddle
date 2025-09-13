@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                </div>
+                
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="safe-mode-toggle" aria-label="Toggle safe mode">
+                        <span class="safe-mode-icon">🔒</span>
+                    </button>
+                </div>
+
+                <div class="navbar-item">
+                    <a href="/admin" class="btn btn-solid">Admin</a>
+                </div>
+
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="keyboard-help" aria-label="Keyboard shortcuts">
+                        <span>?</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="stats-container">
+            <div class="page-header">
+                <h1>Database Statistics</h1>
+                <p>Overview of commission database insights and trends</p>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🎨</div>
+                    <div class="stat-content">
+                        <div class="stat-number"><%= stats.totalCommissions %></div>
+                        <div class="stat-label">Total Commissions</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-number">$<%= stats.totalPrice.toFixed(2) %></div>
+                        <div class="stat-label">Total Value</div>
+                    </div>
+                </div>
+
+                <% if (stats.mostCommonMonth) { %>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-content">
+                            <div class="stat-number"><%= stats.mostCommonMonth.formatted %></div>
+                            <div class="stat-label">Most Active Month</div>
+                            <div class="stat-subtitle"><%= stats.mostCommonMonth.count %> commissions</div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Top Lists -->
+            <div class="top-lists">
+                <!-- Top Characters -->
+                <div class="top-list-section">
+                    <h2>Top Characters</h2>
+                    <% if (stats.topCharacters && stats.topCharacters.length > 0) { %>
+                        <div class="top-list">
+                            <% stats.topCharacters.forEach((character, index) => { %>
+                                <div class="top-item">
+                                    <div class="rank-badge">#<%= index + 1 %></div>
+                                    <div class="item-info">
+                                        <span class="item-name"><%= character.name %></span>
+                                        <span class="item-count"><%= character.count %> commissions</span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-data">No character data available yet.</p>
+                    <% } %>
+                </div>
+
+                <!-- Top Tags -->
+                <div class="top-list-section">
+                    <h2>Top Tags</h2>
+                    <% if (stats.topTags && stats.topTags.length > 0) { %>
+                        <div class="top-list">
+                            <% stats.topTags.forEach((tag, index) => { %>
+                                <div class="top-item">
+                                    <div class="rank-badge">#<%= index + 1 %></div>
+                                    <div class="item-info">
+                                        <span class="item-name"><%= tag.name %></span>
+                                        <span class="item-count"><%= tag.count %> commissions</span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-data">No tag data available yet.</p>
+                    <% } %>
+                </div>
+
+                <!-- Top Artists -->
+                <div class="top-list-section">
+                    <h2>Top Artists</h2>
+                    <% if (stats.topArtists && stats.topArtists.length > 0) { %>
+                        <div class="top-list">
+                            <% stats.topArtists.forEach((artist, index) => { %>
+                                <div class="top-item">
+                                    <div class="rank-badge">#<%= index + 1 %></div>
+                                    <div class="item-info">
+                                        <span class="item-name"><%= artist.name %></span>
+                                        <span class="item-count"><%= artist.count %> commissions</span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-data">No artist data available yet.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Keyboard Help Modal -->
+    <div id="keyboard-help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <kbd>T</kbd>
+                    <span>Toggle theme</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>S</kbd>
+                    <span>Toggle safe mode</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>?</kbd>
+                    <span>Show/hide this help</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Esc</kbd>
+                    <span>Close modals</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/js/app.js"></script>
+
+<style>
+.stats-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.2;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 0.2rem;
+}
+
+.stat-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+}
+
+.top-lists {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.top-list-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.top-list-section h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.top-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.top-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.top-item:hover {
+    background: var(--bg-hover);
+    transform: translateX(4px);
+}
+
+.rank-badge {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    min-width: 35px;
+    text-align: center;
+}
+
+.rank-badge:nth-child(1) {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.item-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.item-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.no-data {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Special styling for top 3 ranks */
+.top-item:nth-child(1) .rank-badge {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.top-item:nth-child(2) .rank-badge {
+    background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+}
+
+.top-item:nth-child(3) .rank-badge {
+    background: linear-gradient(135deg, #CD7F32, #B8860B);
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        padding: 1rem;
+    }
+    
+    .summary-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .top-lists {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+</body>
+</html>

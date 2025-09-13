@@ -1,0 +1,7 @@
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <text x="128" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">Character</text>
+  <text x="128" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">Portrait</text>
+  <circle cx="128" cy="80" r="20" fill="#ddd" stroke="#aaa" stroke-width="2"/>
+  <rect x="108" y="160" width="40" height="50" fill="#ddd" stroke="#aaa" stroke-width="2"/>
+</svg>

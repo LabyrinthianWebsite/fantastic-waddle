@@ -1,0 +1,8 @@
+<svg width="512" height="288" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="288" fill="#f8f8f8" stroke="#ddd" stroke-width="2"/>
+  <text x="256" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#666">Collection</text>
+  <text x="256" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#666">Cover Image</text>
+  <rect x="206" y="80" width="100" height="60" fill="#eee" stroke="#ccc" stroke-width="2"/>
+  <rect x="196" y="70" width="100" height="60" fill="#ddd" stroke="#bbb" stroke-width="2"/>
+  <rect x="186" y="60" width="100" height="60" fill="#ccc" stroke="#aaa" stroke-width="2"/>
+</svg>

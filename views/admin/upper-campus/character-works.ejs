@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Works - <%= character.name %> - Upper Campus - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item active">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>Works for <%= character.name %></h1>
+                <div class="admin-header-actions">
+                    <a href="/admin/upper-campus/<%= character.id %>" class="btn btn-ghost">← Back to Character</a>
+                    <a href="/admin/upper-campus" class="btn btn-ghost">← Back to Upper Campus</a>
+                </div>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <!-- Add New Work Form -->
+            <div class="form-section">
+                <h2>Add New Work</h2>
+                <form class="admin-form works-form" method="POST" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="work_name">Work Name *</label>
+                            <input 
+                                type="text" 
+                                id="work_name" 
+                                name="work_name" 
+                                class="admin-form-input" 
+                                required
+                                placeholder="e.g., Sailor Moon, Attack on Titan, Final Fantasy VII"
+                            >
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="work_type">Work Type</label>
+                            <select id="work_type" name="work_type" class="admin-form-select">
+                                <option value="">Select Type</option>
+                                <option value="manga">Manga</option>
+                                <option value="anime">Anime</option>
+                                <option value="game">Game</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="external_url">External URL</label>
+                            <input 
+                                type="url" 
+                                id="external_url" 
+                                name="external_url" 
+                                class="admin-form-input" 
+                                placeholder="https://example.com/work-link"
+                            >
+                            <div class="form-hint">Optional link to the work (e.g., official website, wiki page)</div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="sort_order">Sort Order</label>
+                            <input 
+                                type="number" 
+                                id="sort_order" 
+                                name="sort_order" 
+                                class="admin-form-input" 
+                                value="0"
+                                min="0"
+                                placeholder="0"
+                            >
+                            <div class="form-hint">Lower numbers appear first</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="icon">Work Icon</label>
+                        <div class="admin-upload-area">
+                            <input type="file" id="icon" name="icon" accept="image/*" style="display: none;">
+                            <div class="upload-content">
+                                <div class="upload-icon">🎨</div>
+                                <div class="upload-text">Click to upload work icon or drag and drop</div>
+                                <div class="upload-hint">Recommended: Square image, 64x64px or larger</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-solid">Add Work</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Works List -->
+            <div class="admin-content">
+                <h2>Current Works</h2>
+                
+                <% if (works.length === 0) { %>
+                    <div class="empty-state">
+                        <h3>No Works Added Yet</h3>
+                        <p>Add manga, anime, games, or other works that <%= character.name %> has appeared in.</p>
+                    </div>
+                <% } else { %>
+                    <div class="works-list">
+                        <% works.forEach(work => { %>
+                            <div class="work-item" data-work-id="<%= work.id %>">
+                                <div class="work-icon-container">
+                                    <% if (work.icon_path) { %>
+                                        <img src="/uploads/<%= work.icon_path %>" alt="<%= work.work_name %>" class="work-icon">
+                                    <% } else { %>
+                                        <div class="work-icon-placeholder">
+                                            <%= work.work_name.charAt(0).toUpperCase() %>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+                                <div class="work-info">
+                                    <h3 class="work-name">
+                                        <% if (work.external_url) { %>
+                                            <a href="<%= work.external_url %>" target="_blank" rel="noopener noreferrer">
+                                                <%= work.work_name %>
+                                                <span class="external-link-icon">↗</span>
+                                            </a>
+                                        <% } else { %>
+                                            <%= work.work_name %>
+                                        <% } %>
+                                    </h3>
+                                    
+                                    <div class="work-meta">
+                                        <span class="work-type-badge work-type-<%= work.work_type %>">
+                                            <%= work.work_type.charAt(0).toUpperCase() + work.work_type.slice(1) %>
+                                        </span>
+                                        <% if (work.sort_order) { %>
+                                            <span class="sort-order">Order: <%= work.sort_order %></span>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="work-actions">
+                                    <button class="btn btn-ghost btn-sm delete-work" data-work-id="<%= work.id %>">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <style>
+    .works-form .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-section {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .form-section h2 {
+        margin: 0 0 1.5rem 0;
+        color: var(--text-primary);
+    }
+
+    .form-actions {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .form-hint {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+
+    .upload-content {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-text {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .upload-hint {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .works-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .work-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: var(--card-bg);
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+    }
+
+    .work-item:hover {
+        transform: translateY(-1px);
+    }
+
+    .work-icon-container {
+        flex-shrink: 0;
+    }
+
+    .work-icon, .work-icon-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+
+    .work-icon-placeholder {
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .work-info {
+        flex: 1;
+    }
+
+    .work-name {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .work-name a {
+        color: var(--text-primary);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .work-name a:hover {
+        color: var(--primary);
+    }
+
+    .external-link-icon {
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+
+    .work-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .work-type-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .work-type-manga {
+        background: #ff9800;
+        color: white;
+    }
+
+    .work-type-anime {
+        background: #e91e63;
+        color: white;
+    }
+
+    .work-type-game {
+        background: #3f51b5;
+        color: white;
+    }
+
+    .work-type-other {
+        background: #607d8b;
+        color: white;
+    }
+
+    .sort-order {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .work-actions {
+        flex-shrink: 0;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-secondary);
+        background: var(--card-bg);
+        border-radius: 8px;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .error-message {
+        background: var(--error);
+        color: white;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .works-form .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .work-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .work-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+    </style>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Upload area functionality
+        const uploadArea = document.querySelector('.admin-upload-area');
+        const fileInput = document.getElementById('icon');
+        
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.backgroundColor = 'var(--primary-dark)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.backgroundColor = '';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.backgroundColor = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                }
+            });
+        }
+
+        // Delete work functionality
+        document.querySelectorAll('.delete-work').forEach(button => {
+            button.addEventListener('click', async function() {
+                if (!confirm('Are you sure you want to delete this work?')) {
+                    return;
+                }
+
+                const workId = this.dataset.workId;
+                const characterId = '<%= character.id %>';
+                
+                try {
+                    const response = await fetch(`/admin/upper-campus/${characterId}/works/${workId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Remove the work item from the page
+                        const workItem = document.querySelector(`[data-work-id="${workId}"]`);
+                        workItem.remove();
+                    } else {
+                        alert('Failed to delete work');
+                    }
+                } catch (error) {
+                    console.error('Error deleting work:', error);
+                    alert('Failed to delete work');
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>

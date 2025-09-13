@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Import - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+
+<div class="admin-layout">
+    <!-- Admin Navbar -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+                <a href="/admin/import" class="admin-navbar-item active">Import</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div class="page-header">
+                <h1>Bulk Import</h1>
+                <p>Import multiple records from CSV files</p>
+            </div>
+
+            <!-- Import Form -->
+            <div class="import-form-container">
+                <form method="POST" action="/admin/import" enctype="multipart/form-data" class="import-form">
+                    <div class="form-section">
+                        <h2>Import Settings</h2>
+                        
+                        <div class="form-group">
+                            <label for="import_type">Import Type:</label>
+                            <select name="import_type" id="import_type" class="form-select" required>
+                                <option value="">Select import type...</option>
+                                <option value="commissions">Commissions</option>
+                                <option value="characters">Characters</option>
+                                <option value="artists">Artists</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="import_file">CSV File:</label>
+                            <input 
+                                type="file" 
+                                name="import_file" 
+                                id="import_file" 
+                                accept=".csv,.txt" 
+                                class="form-input"
+                                required
+                            >
+                            <small class="form-help">Select a CSV file to import. Maximum file size: 10MB</small>
+                        </div>
+
+                        <div class="form-group import-options" id="commission-options" style="display: none;">
+                            <h3>Commission Import Options</h3>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="create_missing_artists" value="1" checked>
+                                <span class="checkbox-text">Create missing artists automatically</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="create_missing_tags" value="1" checked>
+                                <span class="checkbox-text">Create missing tags automatically</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-solid">
+                            📤 Start Import
+                        </button>
+                        <a href="/admin" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- CSV Format Documentation -->
+            <div class="format-documentation">
+                <h2>CSV Format Requirements</h2>
+                
+                <div class="format-tabs">
+                    <button class="format-tab active" data-format="commissions">Commissions</button>
+                    <button class="format-tab" data-format="characters">Characters</button>
+                    <button class="format-tab" data-format="artists">Artists</button>
+                </div>
+
+                <div class="format-content" id="commissions-format">
+                    <h3>Commission CSV Format</h3>
+                    <p>Required columns: <code>title</code></p>
+                    <p>Optional columns: <code>artist_name, date_month, description, price, score, nsfw, tags</code></p>
+                    
+                    <div class="csv-example">
+                        <h4>Example CSV:</h4>
+                        <pre><code>title,artist_name,date_month,description,price,score,nsfw,tags
+"Character Portrait","Artist Name","2024-01","A detailed character portrait",150.00,95,false,"portrait;character;commission"
+"Landscape Painting","Another Artist","2024-02","Beautiful landscape artwork",200.00,88,false,"landscape;nature;environment"</code></pre>
+                    </div>
+
+                    <div class="format-notes">
+                        <h4>Notes:</h4>
+                        <ul>
+                            <li><code>date_month</code>: Format as YYYY-MM (e.g., "2024-01")</li>
+                            <li><code>price</code>: Numeric value (e.g., 150.00)</li>
+                            <li><code>score</code>: Integer from 1-100</li>
+                            <li><code>nsfw</code>: true/false or 1/0</li>
+                            <li><code>tags</code>: Separate multiple tags with semicolons</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="format-content" id="characters-format" style="display: none;">
+                    <h3>Character CSV Format</h3>
+                    <p>Required columns: <code>name</code></p>
+                    <p>Optional columns: <code>universe, role, year_level, dormitory, age_category, hair_color, eye_color, description, wiki_page, external_profile_url</code></p>
+                    
+                    <div class="csv-example">
+                        <h4>Example CSV:</h4>
+                        <pre><code>name,universe,role,dormitory,age_category,hair_color,eye_color,description
+"Character Name","Thornfield","Student","Wren House","Teen","Brown","Blue","A talented student"
+"Another Character","Wonderland","Teacher","Thorne House","Adult","Black","Green","Experienced teacher"</code></pre>
+                    </div>
+
+                    <div class="format-notes">
+                        <h4>Notes:</h4>
+                        <ul>
+                            <li><code>age_category</code>: Must be one of: Toddler, Kid, Teen, Adult</li>
+                            <li><code>dormitory</code>: House/dormitory name</li>
+                            <li><code>universe</code>: The fictional universe the character belongs to</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="format-content" id="artists-format" style="display: none;">
+                    <h3>Artist CSV Format</h3>
+                    <p>Required columns: <code>name</code></p>
+                    <p>Optional columns: <code>description, website_url</code></p>
+                    
+                    <div class="csv-example">
+                        <h4>Example CSV:</h4>
+                        <pre><code>name,description,website_url
+"Artist Name","Professional digital artist","https://artist-website.com"
+"Another Artist","Specializes in character portraits","https://portfolio.example.com"</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <% if (success || error) { %>
+            <div class="import-results">
+                <% if (success) { %>
+                    <div class="alert alert-success">
+                        <h3>✅ Import Successful</h3>
+                        <p><%= success %></p>
+                    </div>
+                <% } %>
+                
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <h3>❌ Import Errors</h3>
+                        <p><%= error %></p>
+                    </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<style>
+.admin-layout {
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+.admin-navbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+}
+
+.admin-navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-navbar-brand a {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.admin-navbar-menu {
+    display: flex;
+    gap: 2rem;
+}
+
+.admin-navbar-item {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.admin-navbar-item:hover {
+    background: var(--bg-secondary);
+}
+
+.admin-navbar-item.active {
+    background: var(--primary);
+    color: white;
+}
+
+.admin-navbar-end {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-main {
+    padding: 2rem 0;
+}
+
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.page-header p {
+    color: var(--text-secondary);
+}
+
+.import-form-container {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.form-section h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text);
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.import-options h3 {
+    margin-bottom: 1rem;
+    color: var(--text);
+    font-size: 1.1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+}
+
+.checkbox-text {
+    color: var(--text);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.format-documentation {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.format-documentation h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.format-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.format-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.format-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.format-content h3 {
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+.csv-example {
+    margin: 1.5rem 0;
+}
+
+.csv-example h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.csv-example pre {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+}
+
+.csv-example code {
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.format-notes {
+    margin-top: 1.5rem;
+}
+
+.format-notes h4 {
+    margin-bottom: 0.75rem;
+    color: var(--text);
+}
+
+.format-notes ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+}
+
+.format-notes li {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.format-notes code {
+    background: var(--bg-secondary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 2px;
+    font-family: monospace;
+    color: var(--primary);
+}
+
+.import-results {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: rgba(81, 207, 102, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.alert-error {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.alert h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .admin-navbar-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .admin-navbar-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .format-tabs {
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Import type change handler
+    const importType = document.getElementById('import_type');
+    const commissionOptions = document.getElementById('commission-options');
+    
+    importType.addEventListener('change', function() {
+        if (this.value === 'commissions') {
+            commissionOptions.style.display = 'block';
+        } else {
+            commissionOptions.style.display = 'none';
+        }
+    });
+    
+    // Format tabs
+    const formatTabs = document.querySelectorAll('.format-tab');
+    const formatContents = document.querySelectorAll('.format-content');
+    
+    formatTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const format = this.dataset.format;
+            
+            // Update active tab
+            formatTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show corresponding content
+            formatContents.forEach(content => {
+                if (content.id === format + '-format') {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+</body>
+</html>

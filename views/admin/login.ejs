@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Admin Login</h1>
+                <p>Access the CommissionDB admin panel</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <form class="login-form" method="POST" action="/admin/login">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        required 
+                        class="form-input"
+                        placeholder="Enter your username"
+                        autofocus
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required 
+                        class="form-input"
+                        placeholder="Enter your password"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-solid btn-full">
+                    Login
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <a href="/" class="btn btn-ghost">← Back to Site</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 3rem;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+        }
+
+        .error-message {
+            background: var(--error);
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .login-form {
+            margin-bottom: 2rem;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .login-footer {
+            text-align: center;
+        }
+    </style>
+</body>
+</html>

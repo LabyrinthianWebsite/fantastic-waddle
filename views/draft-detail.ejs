@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= draft.title %> - Draft - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/drafts" class="navbar-item">Drafts</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="draft-detail">
+            <!-- Header Section -->
+            <header class="draft-header">
+                <div class="header-content">
+                    <div class="breadcrumb">
+                        <a href="/drafts">Drafts</a> / <span><%= draft.title %></span>
+                    </div>
+                    
+                    <h1 class="draft-title"><%= draft.title %></h1>
+                    
+                    <div class="status-timeline">
+                        <div class="timeline-step <%= draft.status === 'requested' ? 'active' : (draft.status !== 'requested' ? 'completed' : '') %>">
+                            <div class="step-icon">📋</div>
+                            <div class="step-label">Requested</div>
+                        </div>
+                        <div class="timeline-step <%= draft.status === 'accepted' ? 'active' : (['in_progress', 'completed', 'delivered'].includes(draft.status) ? 'completed' : '') %>">
+                            <div class="step-icon">✅</div>
+                            <div class="step-label">Accepted</div>
+                        </div>
+                        <div class="timeline-step <%= draft.status === 'in_progress' ? 'active' : (['completed', 'delivered'].includes(draft.status) ? 'completed' : '') %>">
+                            <div class="step-icon">🎨</div>
+                            <div class="step-label">In Progress</div>
+                        </div>
+                        <div class="timeline-step <%= draft.status === 'completed' ? 'active' : (draft.status === 'delivered' ? 'completed' : '') %>">
+                            <div class="step-icon">🏁</div>
+                            <div class="step-label">Completed</div>
+                        </div>
+                        <div class="timeline-step <%= draft.status === 'delivered' ? 'active' : '' %>">
+                            <div class="step-icon">📦</div>
+                            <div class="step-label">Delivered</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Meta Information -->
+            <section class="draft-meta">
+                <div class="meta-grid">
+                    <% if (draft.artist_name) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">🎭</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Artist</div>
+                                <div class="meta-value">
+                                    <% if (draft.artist_website) { %>
+                                        <a href="<%= draft.artist_website %>" target="_blank" rel="noopener"><%= draft.artist_name %></a>
+                                    <% } else { %>
+                                        <a href="/artists/<%= draft.artist_slug %>"><%= draft.artist_name %></a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (draft.client_name) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">👤</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Client</div>
+                                <div class="meta-value"><%= draft.client_name %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (draft.formatted_date) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">📅</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Started</div>
+                                <div class="meta-value"><%= draft.formatted_date %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (draft.deadline_date) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">⏰</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Deadline</div>
+                                <div class="meta-value"><%= new Date(draft.deadline_date).toLocaleDateString() %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (draft.price) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">💰</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Price</div>
+                                <div class="meta-value">$<%= draft.price %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (collection) { %>
+                        <div class="meta-card">
+                            <div class="meta-icon">📚</div>
+                            <div class="meta-content">
+                                <div class="meta-label">Collection</div>
+                                <div class="meta-value">
+                                    <a href="/collections/<%= collection.slug %>"><%= collection.name %></a>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </section>
+
+            <!-- Description -->
+            <% if (draft.description) { %>
+                <section class="draft-section">
+                    <h2>Description</h2>
+                    <div class="description-content">
+                        <%= draft.description %>
+                    </div>
+                </section>
+            <% } %>
+
+            <!-- Characters -->
+            <% if (characters && characters.length > 0) { %>
+                <section class="draft-section">
+                    <h2>Characters (<%= characters.length %>)</h2>
+                    <div class="characters-grid">
+                        <% characters.forEach(character => { %>
+                            <a href="/characters/<%= character.slug %>" class="character-card">
+                                <div class="character-portrait">
+                                    <% if (character.portrait_thumb_path) { %>
+                                        <img src="/uploads/<%= character.portrait_thumb_path %>" alt="<%= character.name %>" loading="lazy">
+                                    <% } else { %>
+                                        <div class="character-placeholder">👤</div>
+                                    <% } %>
+                                </div>
+                                <div class="character-name"><%= character.name %></div>
+                            </a>
+                        <% }) %>
+                    </div>
+                </section>
+            <% } %>
+
+            <!-- Tags -->
+            <% if (tags && tags.length > 0) { %>
+                <section class="draft-section">
+                    <h2>Tags</h2>
+                    <div class="tags-container">
+                        <% tags.forEach(tag => { %>
+                            <a href="/tags/<%= tag.slug %>" class="tag-link">#<%= tag.name %></a>
+                        <% }) %>
+                    </div>
+                </section>
+            <% } %>
+
+            <!-- Draft Images -->
+            <% if (draftImages && draftImages.length > 0) { %>
+                <section class="draft-section">
+                    <h2>Progress Images (<%= draftImages.length %>)</h2>
+                    <div class="images-container">
+                        <div class="images-grid">
+                            <% draftImages.forEach(image => { %>
+                                <div class="image-item">
+                                    <img src="/uploads/<%= image.display_path %>" alt="Draft progress" loading="lazy" class="draft-image" data-display="/uploads/<%= image.display_path %>" data-original="/uploads/<%= image.original_path || image.display_path %>" data-filename="<%= image.filename || 'Draft Image' %>">
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </section>
+            <% } %>
+        </div>
+
+        <!-- Image Modal -->
+        <div id="imageModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <img id="modalImage" src="" alt="">
+                <div class="modal-info">
+                    <span id="modalFilename"></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+    .draft-detail {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .draft-header {
+        margin-bottom: 3rem;
+    }
+
+    .breadcrumb {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: var(--accent-primary);
+        text-decoration: none;
+    }
+
+    .draft-title {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .status-timeline {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .timeline-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0.4;
+        transition: opacity 0.3s;
+    }
+
+    .timeline-step.completed,
+    .timeline-step.active {
+        opacity: 1;
+    }
+
+    .timeline-step.active .step-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 8px var(--accent-primary));
+    }
+
+    .step-icon {
+        font-size: 2rem;
+        transition: transform 0.3s;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+    }
+
+    .draft-meta {
+        margin-bottom: 3rem;
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .meta-card {
+        background: var(--surface-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .meta-icon {
+        font-size: 1.5rem;
+    }
+
+    .meta-content {
+        flex: 1;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .meta-value a {
+        color: var(--accent-primary);
+        text-decoration: none;
+    }
+
+    .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    .draft-section {
+        margin-bottom: 3rem;
+    }
+
+    .draft-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    .description-content {
+        background: var(--surface-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        line-height: 1.7;
+        color: var(--text-secondary);
+        white-space: pre-wrap;
+    }
+
+    .characters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .character-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--surface-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .character-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .character-portrait {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: var(--surface-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .character-portrait img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .character-placeholder {
+        font-size: 1.5rem;
+        color: var(--text-tertiary);
+    }
+
+    .character-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tag-link {
+        padding: 0.5rem 1rem;
+        background: var(--surface-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 2rem;
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .tag-link:hover {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-primary);
+    }
+
+    .images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .image-item {
+        position: relative;
+        aspect-ratio: 16/9;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .image-item:hover {
+        transform: scale(1.02);
+    }
+
+    .draft-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-content {
+        position: relative;
+        margin: auto;
+        padding: 20px;
+        width: 90%;
+        max-width: 1200px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1001;
+    }
+
+    #modalImage {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .modal-info {
+        margin-top: 20px;
+        color: white;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .draft-detail {
+            padding: 1rem;
+        }
+
+        .draft-title {
+            font-size: 2rem;
+        }
+
+        .status-timeline {
+            gap: 1rem;
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+        }
+
+        .meta-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .characters-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+
+        .images-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+
+    <script>
+    // Image modal functionality
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalFilename = document.getElementById('modalFilename');
+    const modalClose = document.querySelector('.modal-close');
+
+    document.querySelectorAll('.draft-image').forEach(img => {
+        img.addEventListener('click', function() {
+            modal.style.display = 'block';
+            modalImage.src = this.dataset.original || this.dataset.display;
+            modalFilename.textContent = this.dataset.filename || 'Draft Image';
+        });
+    });
+
+    modalClose.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            modal.style.display = 'none';
+        }
+    });
+    </script>
+
+    <script src="/public/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title ? title + ' - ' : '' %>CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="<%= typeof theme !== 'undefined' ? theme : 'dark' %>-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                </div>
+                
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="safe-mode-toggle" aria-label="Toggle safe mode">
+                        <span class="safe-mode-icon">🔒</span>
+                    </button>
+                </div>
+
+                <div class="navbar-item">
+                    <a href="/admin" class="btn btn-solid">Admin</a>
+                </div>
+
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="keyboard-help" aria-label="Keyboard shortcuts">
+                        <span>?</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <%- body %>
+    </main>
+
+    <!-- Keyboard Help Modal -->
+    <div id="keyboard-help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="keyboard-shortcuts">
+                    <div class="shortcut-item">
+                        <kbd>/</kbd>
+                        <span>Focus search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>a</kbd>
+                        <span>Go to Artists</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>t</kbd>
+                        <span>Go to Tags</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>g</kbd> <kbd>c</kbd>
+                        <span>Go to Characters</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>ESC</kbd>
+                        <span>Close modals</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>←</kbd> <kbd>→</kbd>
+                        <span>Navigate lightbox</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" style="display: none;">
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Close">&times;</button>
+            <button class="lightbox-prev" aria-label="Previous">‹</button>
+            <button class="lightbox-next" aria-label="Next">›</button>
+            <img class="lightbox-image" src="" alt="">
+            <div class="lightbox-caption">
+                <p class="lightbox-filename"></p>
+                <a class="lightbox-original-link" href="" target="_blank">
+                    Click to View Full Image
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/js/app.js"></script>
+</body>
+</html>

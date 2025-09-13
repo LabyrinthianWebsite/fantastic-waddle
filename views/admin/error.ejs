@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= typeof user !== 'undefined' ? user.username : 'Admin' %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="error-page">
+                <div class="error-icon">⚠️</div>
+                <h1>Oops! Something went wrong</h1>
+                <div class="error-message">
+                    <%= error || 'An unexpected error occurred' %>
+                </div>
+                <div class="error-actions">
+                    <a href="/admin" class="btn btn-solid">← Back to Dashboard</a>
+                    <button onclick="history.back()" class="btn btn-ghost">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+
+    <style>
+    .admin-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .error-page {
+        text-align: center;
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        box-shadow: var(--shadow);
+        width: 100%;
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .error-page h1 {
+        color: var(--text);
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+
+    .error-message {
+        background: var(--error);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+        word-break: break-word;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 1rem;
+        }
+        
+        .error-page {
+            padding: 2rem 1rem;
+        }
+        
+        .error-page h1 {
+            font-size: 1.5rem;
+        }
+        
+        .error-actions {
+            flex-direction: column;
+        }
+    }
+    </style>
+</body>
+</html>

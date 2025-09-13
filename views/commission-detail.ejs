@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= commission.title %> - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.ico">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/">CommissionDB</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/" class="navbar-item">Browse</a>
+                <a href="/drafts" class="navbar-item">Drafts</a>
+                <a href="/characters" class="navbar-item">Characters</a>
+                <a href="/upper-campus" class="navbar-item">Upper Campus</a>
+                <a href="/artists" class="navbar-item">Artists</a>
+                <a href="/collections" class="navbar-item">Collections</a>
+                <a href="/tags" class="navbar-item">Tags</a>
+                <a href="/stats" class="navbar-item">Stats</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                </div>
+                
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="safe-mode-toggle" aria-label="Toggle safe mode">
+                        <span class="safe-mode-icon">🔒</span>
+                    </button>
+                </div>
+
+                <div class="navbar-item">
+                    <a href="/admin" class="btn btn-solid">Admin</a>
+                </div>
+
+                <div class="navbar-item">
+                    <button class="btn btn-ghost" id="keyboard-help" aria-label="Keyboard shortcuts">
+                        <span>?</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Commission Header -->
+            <div class="commission-header">
+                <h1><%= commission.title %></h1>
+                <div class="commission-meta">
+                    <% if (commission.artist_name) { %>
+                        <span class="commission-artist">
+                            by <a href="/artists/<%= commission.artist_slug %>" class="artist-link"><%= commission.artist_name %></a>
+                        </span>
+                    <% } %>
+                    <% if (commission.formatted_date) { %>
+                        <span class="commission-date"><%= commission.formatted_date %></span>
+                    <% } %>
+                    <% if (commission.score) { %>
+                        <span class="commission-score">⭐ <%= commission.score %></span>
+                    <% } %>
+                    <% if (commission.nsfw) { %>
+                        <span class="nsfw-badge">NSFW</span>
+                    <% } %>
+                    <% if (commission.price) { %>
+                        <span class="commission-price">$<%= commission.price.toFixed(2) %></span>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Main Image -->
+            <% if (commission.main_image_url) { %>
+                <div class="commission-main-image-container">
+                    <div class="commission-main-image">
+                        <img src="<%= commission.main_image_url %>" alt="<%= commission.title %>" loading="lazy" class="main-image-display clickable-image" data-display="<%= commission.main_image_url %>" data-original="/uploads/<%= commission.main_image_original %>" data-filename="<%= commission.title %> - Main Image" onerror="this.src='/public/images/commission-placeholder.jpg'; this.onerror=null;">
+                        <div class="image-overlay">
+                            <span class="image-overlay-text">Click to view full size</span>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Commission Details -->
+            <div class="commission-details">
+                <!-- Characters Section -->
+                <% if (characters && characters.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">👤</span>Characters (<%= characters.length %>)</h2>
+                        <div class="characters-list">
+                            <% characters.forEach(character => { %>
+                                <div class="character-item">
+                                    <% if (character.portrait_thumb_path) { %>
+                                        <img src="<%= character.portrait_url %>" alt="<%= character.name %>" class="character-thumb">
+                                    <% } %>
+                                    <a href="/char/<%= character.slug %>" class="character-name-link">
+                                        <span 
+                                            class="character-name" 
+                                            <% if (character.dormitory && character.dormitory_color) { %>style="color: <%= character.dormitory_color %>"<% } %>
+                                        >
+                                            <%= character.name %>
+                                        </span>
+                                        <% if (character.dormitory && character.dormitory_animal && !character.is_upper_campus) { %>
+                                            <sup class="dormitory-icon" title="<%= character.dormitory %>"><%= character.dormitory_animal %></sup>
+                                        <% } %>
+                                    </a>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Tags Section -->
+                <% if (tags && tags.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">🏷️</span>Tags</h2>
+                        <div class="tags-list">
+                            <% tags.forEach(tag => { %>
+                                <span class="tag"><%= tag.name %></span>
+                            <% }) %>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Key Colors -->
+                <% if (commission.key_colors && commission.key_colors.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">🎨</span>Key Colors</h2>
+                        <div class="key-colors-display">
+                            <% commission.key_colors.forEach(colorName => { %>
+                                <div class="key-color-chip">
+                                    <span class="color-name"><%= colorName %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Description -->
+                <% if (commission.description) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">📝</span>Description</h2>
+                        <div class="commission-description">
+                            <%= commission.description %>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Gallery Images -->
+                <% if (galleryImages && galleryImages.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">🖼️</span>Gallery (<%= galleryImages.length %>)</h2>
+                        <div class="gallery-container">
+                            <div class="gallery-thumbnail-grid">
+                                <% galleryImages.forEach(image => { %>
+                                    <div class="gallery-thumbnail-item">
+                                        <img src="/uploads/<%= image.display_path %>" alt="Gallery image" loading="lazy" class="gallery-thumb" data-display="/uploads/<%= image.display_path %>" data-original="/uploads/<%= image.original_path || image.display_path %>" data-filename="<%= image.original_filename || 'Gallery Image' %>">
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Draft Images -->
+                <% if (draftImages && draftImages.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">✏️</span>Drafts (<%= draftImages.length %>)</h2>
+                        <div class="drafts-container">
+                            <div class="drafts-thumbnail-grid">
+                                <% draftImages.forEach(image => { %>
+                                    <div class="drafts-thumbnail-item">
+                                        <img src="/uploads/<%= image.display_path %>" alt="Draft image" loading="lazy" class="draft-thumb" data-display="/uploads/<%= image.display_path %>" data-original="/uploads/<%= image.original_path || image.display_path %>" data-filename="<%= image.original_filename || 'Draft Image' %>">
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
+
+                <!-- Files -->
+                <% if (files && files.length > 0) { %>
+                    <section class="commission-section">
+                        <h2><span class="section-icon">📁</span>Files (<%= files.length %>)</h2>
+                        <div class="files-list">
+                            <% files.forEach(file => { %>
+                                <div class="file-item">
+                                    <span class="file-name"><%= file.original_filename %></span>
+                                    <span class="file-size"><%= file.formatted_size %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <div class="files-download">
+                            <a href="/c/<%= commission.slug %>/files.zip" class="btn btn-solid">Download All Files</a>
+                        </div>
+                    </section>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" style="display: none;">
+        <div class="lightbox-overlay"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Close">&times;</button>
+            <button class="lightbox-prev" aria-label="Previous">‹</button>
+            <button class="lightbox-next" aria-label="Next">›</button>
+            <img class="lightbox-image" src="" alt="">
+            <div class="lightbox-caption">
+                <p class="lightbox-filename"></p>
+                <a class="lightbox-original-link" href="" target="_blank">
+                    Click to View Full Image
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/js/app.js"></script>
+    
+    <style>
+        .artist-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .artist-link:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+
+        .key-colors-display {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .key-color-chip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .key-color-chip:hover {
+            background: var(--primary);
+            color: var(--bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-name {
+            display: block;
+        }
+    </style>
+</body>
+</html>

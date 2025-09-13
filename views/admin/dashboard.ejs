@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/novels" class="admin-navbar-item">Novels</a>
+                <a href="/admin/drafts" class="admin-navbar-item">Drafts</a>
+                <a href="/admin/characters" class="admin-navbar-item">Characters</a>
+                <a href="/admin/upper-campus" class="admin-navbar-item">Upper Campus</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage your commission database</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🎨</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.commissions %></div>
+                <div class="stat-label">Commissions</div>
+            </div>
+            <a href="/admin/commissions" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.drafts %></div>
+                <div class="stat-label">Drafts</div>
+            </div>
+            <a href="/admin/drafts" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.novels %></div>
+                <div class="stat-label">Novels</div>
+            </div>
+            <a href="/admin/novels" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.characters %></div>
+                <div class="stat-label">Characters</div>
+            </div>
+            <a href="/admin/characters" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🏫</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.upperCampusCharacters %></div>
+                <div class="stat-label">Upper Campus</div>
+            </div>
+            <a href="/admin/upper-campus" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🎭</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.artists %></div>
+                <div class="stat-label">Artists</div>
+            </div>
+            <a href="/admin/artists" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.tags %></div>
+                <div class="stat-label">Tags</div>
+            </div>
+            <a href="/admin/tags" class="stat-link">Manage →</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-content">
+                <div class="stat-number"><%= stats.collections %></div>
+                <div class="stat-label">Collections</div>
+            </div>
+            <a href="/admin/collections" class="stat-link">Manage →</a>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="actions-grid">
+            <a href="/admin/commissions/new" class="action-card">
+                <div class="action-icon">➕</div>
+                <div class="action-title">Add Commission</div>
+                <div class="action-description">Upload a new commission with images and details</div>
+            </a>
+
+            <a href="/admin/drafts/new" class="action-card">
+                <div class="action-icon">📝</div>
+                <div class="action-title">Add Draft</div>
+                <div class="action-description">Start tracking a new work in progress</div>
+            </a>
+
+            <a href="/admin/novels/new" class="action-card">
+                <div class="action-icon">📖</div>
+                <div class="action-title">Add Novel</div>
+                <div class="action-description">Create a new text-based commission or story</div>
+            </a>
+
+            <a href="/admin/characters/new" class="action-card">
+                <div class="action-icon">👤</div>
+                <div class="action-title">Add Character</div>
+                <div class="action-description">Create a new character with portrait and details</div>
+            </a>
+
+            <a href="/admin/upper-campus/new" class="action-card">
+                <div class="action-icon">🏫</div>
+                <div class="action-title">Add Upper Campus Character</div>
+                <div class="action-description">Create a new Upper Campus character with extended details</div>
+            </a>
+
+            <a href="/admin/artists/new" class="action-card">
+                <div class="action-icon">🎭</div>
+                <div class="action-title">Add Artist</div>
+                <div class="action-description">Register a new artist to the database</div>
+            </a>
+
+            <a href="/admin/collections/new" class="action-card">
+                <div class="action-icon">📚</div>
+                <div class="action-title">Add Collection</div>
+                <div class="action-description">Create a new collection or series</div>
+            </a>
+
+            <a href="/admin/import" class="action-card">
+                <div class="action-icon">📤</div>
+                <div class="action-title">Bulk Import</div>
+                <div class="action-description">Import multiple records from CSV files</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h2>Recent Commissions</h2>
+        <% if (recentCommissions.length === 0) { %>
+            <div class="no-activity">
+                <p>No commissions yet. <a href="/admin/commissions/new">Add your first commission</a></p>
+            </div>
+        <% } else { %>
+            <div class="activity-list">
+                <% recentCommissions.forEach(commission => { %>
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <h3><%= commission.title %></h3>
+                            <p>
+                                <% if (commission.artist_name) { %>
+                                    by <%= commission.artist_name %> • 
+                                <% } %>
+                                <%= commission.date_month %>
+                                <% if (commission.score) { %>
+                                    • Score: <%= commission.score %>
+                                <% } %>
+                            </p>
+                        </div>
+                        <div class="activity-actions">
+                            <a href="/c/<%= commission.slug %>" class="btn btn-ghost btn-sm">View</a>
+                            <a href="/admin/commissions/<%= commission.id %>/edit" class="btn btn-solid btn-sm">Edit</a>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </main>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+</body>
+</html>
+
+<style>
+.admin-dashboard {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+    position: relative;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-link {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    color: var(--primary);
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.stat-link:hover {
+    color: var(--secondary);
+}
+
+.quick-actions,
+.recent-activity {
+    margin-bottom: 3rem;
+}
+
+.quick-actions h2,
+.recent-activity h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+}
+
+.action-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.action-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.action-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.activity-list {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-content h3 {
+    margin-bottom: 0.25rem;
+    color: var(--text);
+}
+
+.activity-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.activity-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.no-activity {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border-radius: 12px;
+}
+
+.no-activity a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.no-activity a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .activity-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .activity-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= character ? 'Edit' : 'Add' %> Character - Admin - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body class="dark-theme">
+    <nav class="admin-navbar">
+        <div class="admin-navbar-container">
+            <div class="admin-navbar-brand">
+                <a href="/admin">CommissionDB Admin</a>
+            </div>
+            
+            <div class="admin-navbar-menu">
+                <a href="/admin" class="admin-navbar-item">Dashboard</a>
+                <a href="/admin/commissions" class="admin-navbar-item">Commissions</a>
+                <a href="/admin/characters" class="admin-navbar-item active">Characters</a>
+                <a href="/admin/artists" class="admin-navbar-item">Artists</a>
+                <a href="/admin/tags" class="admin-navbar-item">Tags</a>
+                <a href="/admin/collections" class="admin-navbar-item">Collections</a>
+            </div>
+
+            <div class="admin-navbar-end">
+                <div class="admin-navbar-item">
+                    <span>Welcome, <%= user.username %></span>
+                </div>
+                <div class="admin-navbar-item">
+                    <a href="/" class="btn btn-ghost">View Site</a>
+                </div>
+                <div class="admin-navbar-item">
+                    <form method="POST" action="/admin/logout" style="display: inline;">
+                        <button type="submit" class="btn btn-ghost">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1><%= character ? 'Edit' : 'Add' %> Character</h1>
+                <div class="admin-header-actions">
+                    <a href="/admin/characters" class="btn btn-ghost">← Back to Characters</a>
+                </div>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <form class="admin-form character-form" method="POST" enctype="multipart/form-data" 
+                  action="<%= character ? '/admin/characters/' + character.id : '/admin/characters' %>">
+                
+                <div class="form-grid">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="name">Character Name *</label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.name : '' %>" 
+                                required
+                                placeholder="Enter character name"
+                            >
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="universe">Universe</label>
+                            <select id="universe" name="universe" class="admin-form-select">
+                                <option value="">Select Universe</option>
+                                <option value="Wonderland" <%= character && character.universe === 'Wonderland' ? 'selected' : '' %>>Wonderland</option>
+                                <option value="Thornfield" <%= character && character.universe === 'Thornfield' ? 'selected' : '' %>>Thornfield</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="role">Role</label>
+                            <select id="role" name="role" class="admin-form-select">
+                                <option value="">Select Role</option>
+                                <!-- Options will be populated by JavaScript based on universe -->
+                            </select>
+                        </div>
+
+                        <div class="admin-form-group" id="year-level-group" style="display: none;">
+                            <label class="admin-form-label" for="year_level">Year Level *</label>
+                            <input 
+                                type="text" 
+                                id="year_level" 
+                                name="year_level" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.year_level : '' %>" 
+                                placeholder="e.g., Year 1, Year 2, etc."
+                            >
+                        </div>
+
+                        <div class="admin-form-group" id="dormitory-group" style="display: none;">
+                            <label class="admin-form-label" for="dormitory">Dormitory</label>
+                            <select id="dormitory" name="dormitory" class="admin-form-select">
+                                <option value="">Select Dormitory</option>
+                                <option value="Wren House" <%= character && character.dormitory === 'Wren House' ? 'selected' : '' %>>Wren House</option>
+                                <option value="Thorne House" <%= character && character.dormitory === 'Thorne House' ? 'selected' : '' %>>Thorne House</option>
+                                <option value="Clover Hall" <%= character && character.dormitory === 'Clover Hall' ? 'selected' : '' %>>Clover Hall</option>
+                                <option value="Marlowe Wing" <%= character && character.dormitory === 'Marlowe Wing' ? 'selected' : '' %>>Marlowe Wing</option>
+                                <option value="Briar House" <%= character && character.dormitory === 'Briar House' ? 'selected' : '' %>>Briar House</option>
+                                <option value="Slate Row" <%= character && character.dormitory === 'Slate Row' ? 'selected' : '' %>>Slate Row</option>
+                                <option value="Ashgate Hall" <%= character && character.dormitory === 'Ashgate Hall' ? 'selected' : '' %>>Ashgate Hall</option>
+                                <option value="Rowan Hearth" <%= character && character.dormitory === 'Rowan Hearth' ? 'selected' : '' %>>Rowan Hearth</option>
+                                <option value="Obscurité House" <%= character && character.dormitory === 'Obscurité House' ? 'selected' : '' %>>Obscurité House</option>
+                                <option value="Burrow Lodge" <%= character && character.dormitory === 'Burrow Lodge' ? 'selected' : '' %>>Burrow Lodge</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Physical Characteristics -->
+                    <div class="form-section">
+                        <h3>Physical Characteristics</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="age_category">Age Category</label>
+                            <select id="age_category" name="age_category" class="admin-form-select">
+                                <option value="">Select Age</option>
+                                <option value="Toddler" <%= character && character.age_category === 'Toddler' ? 'selected' : '' %>>Toddler</option>
+                                <option value="Kid" <%= character && character.age_category === 'Kid' ? 'selected' : '' %>>Kid</option>
+                                <option value="Teen" <%= character && character.age_category === 'Teen' ? 'selected' : '' %>>Teen</option>
+                                <option value="Adult" <%= character && character.age_category === 'Adult' ? 'selected' : '' %>>Adult</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="age">Age (Years)</label>
+                            <input 
+                                type="number" 
+                                id="age" 
+                                name="age" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.age : '' %>" 
+                                placeholder="Specific age in years"
+                                min="0"
+                                max="200"
+                            >
+                            <div class="form-hint">Optional: Specific age in years (helps with age discrepancies)</div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="hair_color">Hair Color</label>
+                            <input 
+                                type="text" 
+                                id="hair_color" 
+                                name="hair_color" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.hair_color : '' %>" 
+                                placeholder="e.g., Brown, Blonde, Black, Red, etc."
+                            >
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="eye_color">Eye Color</label>
+                            <input 
+                                type="text" 
+                                id="eye_color" 
+                                name="eye_color" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.eye_color : '' %>" 
+                                placeholder="e.g., Blue, Green, Brown, Hazel, etc."
+                            >
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="portrait">Character Portrait</label>
+                            <div class="admin-upload-area">
+                                <input type="file" id="portrait" name="portrait" accept="image/*" style="display: none;">
+                                <div class="upload-content">
+                                    <div class="upload-icon">📷</div>
+                                    <div class="upload-text">Click to upload portrait or drag and drop</div>
+                                    <div class="upload-hint">Recommended: Square image, 256x256px or larger</div>
+                                </div>
+                            </div>
+                            <% if (character && character.portrait_thumb_path) { %>
+                                <div class="current-image">
+                                    <img src="/uploads/<%= character.portrait_thumb_path %>" alt="Current portrait" style="max-width: 100px; border-radius: 8px; margin-top: 0.5rem;">
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section full-width">
+                    <h3>Additional Information</h3>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label" for="description">Description</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            class="admin-form-textarea" 
+                            rows="4"
+                            placeholder="Character background, personality, etc."
+                        ><%= character ? character.description : '' %></textarea>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="wiki_page">Wiki Page</label>
+                            <input 
+                                type="text" 
+                                id="wiki_page" 
+                                name="wiki_page" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.wiki_page : '' %>" 
+                                placeholder="MediaWiki page name"
+                            >
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="external_profile_url">External Profile URL</label>
+                            <input 
+                                type="url" 
+                                id="external_profile_url" 
+                                name="external_profile_url" 
+                                class="admin-form-input" 
+                                value="<%= character ? character.external_profile_url : '' %>" 
+                                placeholder="https://..."
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-solid">
+                        <%= character ? 'Update' : 'Create' %> Character
+                    </button>
+                    <a href="/admin/characters" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script>
+    // Character form logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const universeSelect = document.getElementById('universe');
+        const roleSelect = document.getElementById('role');
+        const yearLevelGroup = document.getElementById('year-level-group');
+        const dormitoryGroup = document.getElementById('dormitory-group');
+        
+        const rolesByUniverse = {
+            'Wonderland': ['Pet', 'Master'],
+            'Thornfield': ['Teacher', 'Student']
+        };
+        
+        function updateRoleOptions() {
+            const universe = universeSelect.value;
+            const currentRole = '<%= character ? character.role : "" %>';
+            
+            roleSelect.innerHTML = '<option value="">Select Role</option>';
+            
+            if (universe && rolesByUniverse[universe]) {
+                rolesByUniverse[universe].forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role;
+                    option.textContent = role;
+                    if (role === currentRole) {
+                        option.selected = true;
+                    }
+                    roleSelect.appendChild(option);
+                });
+            }
+            
+            updateConditionalFields();
+        }
+        
+        function updateConditionalFields() {
+            const universe = universeSelect.value;
+            const role = roleSelect.value;
+            
+            // Show year level for Thornfield students
+            if (universe === 'Thornfield' && role === 'Student') {
+                yearLevelGroup.style.display = 'block';
+                document.getElementById('year_level').required = true;
+            } else {
+                yearLevelGroup.style.display = 'none';
+                document.getElementById('year_level').required = false;
+            }
+            
+            // Show dormitory for Thornfield characters
+            if (universe === 'Thornfield') {
+                dormitoryGroup.style.display = 'block';
+            } else {
+                dormitoryGroup.style.display = 'none';
+            }
+        }
+        
+        universeSelect.addEventListener('change', updateRoleOptions);
+        roleSelect.addEventListener('change', updateConditionalFields);
+        
+        // Initialize on page load
+        updateRoleOptions();
+        
+        // Dormitory color preview
+        const dormitorySelect = document.getElementById('dormitory');
+        const dormitoryColors = {
+            'Wren House': '#1E88E5',
+            'Thorne House': '#FBC02D',
+            'Clover Hall': '#43A047',
+            'Marlowe Wing': '#EC407A',
+            'Briar House': '#E53935',
+            'Slate Row': '#FB8C00',
+            'Ashgate Hall': '#8E24AA',
+            'Rowan Hearth': '#00897B',
+            'Obscurité House': '#666666',
+            'Burrow Lodge': '#B87333'
+        };
+        
+        dormitorySelect.addEventListener('change', function() {
+            const color = dormitoryColors[this.value];
+            if (color) {
+                this.style.borderLeftColor = color;
+                this.style.borderLeftWidth = '4px';
+            } else {
+                this.style.borderLeft = '';
+            }
+        });
+        
+        // Trigger initial color
+        dormitorySelect.dispatchEvent(new Event('change'));
+    });
+    </script>
+
+    <style>
+    .admin-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .admin-header h1 {
+        margin: 0;
+        color: var(--text);
+    }
+
+    .character-form {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-section {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .form-section.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-section h3 {
+        margin: 0 0 1.5rem 0;
+        color: var(--text);
+        font-size: 1.1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .admin-navbar-item.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .upload-content {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-text {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .upload-hint {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .current-image {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .error-message {
+        background: var(--error);
+        color: white;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+    </style>
+</body>
+</html>

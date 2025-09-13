@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete Demo - CommissionDB</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .demo-section h2 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-help {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .demo-info {
+            background: #0066cc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .demo-info h1 {
+            margin: 0 0 10px 0;
+        }
+        
+        .demo-info p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .feature-list {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .feature-list h3 {
+            margin-top: 0;
+            color: #28a745;
+        }
+        
+        .feature-list ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-info">
+            <h1>🎨 CommissionDB Autocomplete Demo</h1>
+            <p>Enhanced artist and character selection with typeahead search and inline creation</p>
+        </div>
+        
+        <div class="feature-list">
+            <h3>✨ New Features</h3>
+            <ul>
+                <li><strong>Typeahead Search:</strong> Start typing to find artists and characters instantly</li>
+                <li><strong>Create New Inline:</strong> Type a name that doesn't exist and select "Create new"</li>
+                <li><strong>Multiple Selection:</strong> Select multiple characters with visual tags</li>
+                <li><strong>Keyboard Navigation:</strong> Use arrow keys and Enter to navigate results</li>
+                <li><strong>Smart Filtering:</strong> Results exclude already selected items</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h2>👨‍🎨 Artist Selection (Single)</h2>
+            <div class="form-group">
+                <label for="artist_demo">Artist</label>
+                <div data-autocomplete="artist" data-placeholder="Start typing to search for an artist..." class="artist-autocomplete" id="artist_demo">
+                    <!-- This will be populated by the autocomplete script -->
+                </div>
+                <div class="form-help">Single selection with create-new capability</div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>👥 Character Selection (Multiple)</h2>
+            <div class="form-group">
+                <label for="character_demo">Characters</label>
+                <div data-autocomplete="character" data-multiple data-placeholder="Start typing to search for characters..." class="character-autocomplete" id="character_demo">
+                    <!-- This will be populated by the autocomplete script -->
+                </div>
+                <div class="form-help">Multiple selection with visual tags and removal buttons</div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🧪 Test Instructions</h2>
+            <ol>
+                <li><strong>Search existing:</strong> Try typing common names like "John", "Alice", or "Bob"</li>
+                <li><strong>Create new:</strong> Type a unique name like "TestArtist123" and select the green "Create new" option</li>
+                <li><strong>Multiple characters:</strong> In the character field, select multiple items to see the tag interface</li>
+                <li><strong>Remove selections:</strong> Click the × button on any selected tag to remove it</li>
+                <li><strong>Keyboard navigation:</strong> Use ↑↓ arrow keys and Enter when dropdown is open</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Mock API for demo purposes -->
+    <script>
+        // Mock API responses for demo
+        const mockAPI = {
+            artist: [
+                { id: 1, name: 'Alice Cooper' },
+                { id: 2, name: 'Bob Ross' },
+                { id: 3, name: 'Charlie Brown' },
+                { id: 4, name: 'Diana Prince' },
+                { id: 5, name: 'Edward Hopper' },
+                { id: 6, name: 'Frida Kahlo' }
+            ],
+            character: [
+                { id: 1, name: 'Aragorn' },
+                { id: 2, name: 'Hermione Granger' },
+                { id: 3, name: 'Luke Skywalker' },
+                { id: 4, name: 'Wonder Woman' },
+                { id: 5, name: 'Spider-Man' },
+                { id: 6, name: 'Gandalf' },
+                { id: 7, name: 'Princess Leia' },
+                { id: 8, name: 'Batman' },
+                { id: 9, name: 'Yoda' },
+                { id: 10, name: 'Superman' }
+            ]
+        };
+
+        // Override fetch for demo
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url.includes('/api/suggest')) {
+                const urlObj = new URL(url, window.location.origin);
+                const type = urlObj.searchParams.get('type');
+                const query = urlObj.searchParams.get('q') || '';
+                const take = parseInt(urlObj.searchParams.get('take')) || 10;
+                
+                if (mockAPI[type]) {
+                    const results = mockAPI[type]
+                        .filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
+                        .slice(0, take);
+                    
+                    return Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve(results)
+                    });
+                }
+            }
+            return originalFetch.call(this, url, options);
+        };
+    </script>
+    
+    <!-- Load the autocomplete component -->
+    <script src="/public/js/autocomplete.js"></script>
+</body>
+</html>
