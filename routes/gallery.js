@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
       SELECT s.*, 
              m.name as model_name,
              m.slug as model_slug,
-             st.name as studio_name,
+             COALESCE(st.name, 'One-Shot Studio') as studio_name,
              st.slug as studio_slug
       FROM sets s
       JOIN models m ON s.model_id = m.id
@@ -144,7 +144,7 @@ router.get('/sets', async (req, res) => {
     const modelId = req.query.model ? parseInt(req.query.model) : null;
     const sets = await req.db.getSets(modelId);
     const models = await req.db.all(`
-      SELECT m.*, s.name as studio_name 
+      SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name 
       FROM models m 
       LEFT JOIN studios s ON m.studio_id = s.id 
       ORDER BY m.name
@@ -265,7 +265,7 @@ router.get('/search', async (req, res) => {
 
       // Search models
       results.models = await req.db.all(`
-        SELECT m.*, s.name as studio_name FROM models m
+        SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name FROM models m
         LEFT JOIN studios s ON m.studio_id = s.id
         WHERE m.name LIKE ? OR m.description LIKE ?
         ORDER BY m.name LIMIT 10

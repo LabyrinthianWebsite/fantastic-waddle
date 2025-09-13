@@ -214,7 +214,7 @@ class GalleryDatabase extends Database {
   async getModels(studioId = null) {
     let query = `
       SELECT m.*, 
-             s.name as studio_name,
+             COALESCE(s.name, 'One-Shot Studio') as studio_name,
              s.slug as studio_slug,
              COUNT(DISTINCT sets.id) as set_count
       FROM models m
@@ -236,7 +236,7 @@ class GalleryDatabase extends Database {
   async getModelBySlug(slug) {
     return this.get(`
       SELECT m.*, 
-             s.name as studio_name,
+             COALESCE(s.name, 'One-Shot Studio') as studio_name,
              s.slug as studio_slug
       FROM models m
       LEFT JOIN studios s ON m.studio_id = s.id
@@ -263,7 +263,7 @@ class GalleryDatabase extends Database {
       SELECT s.*, 
              m.name as model_name,
              m.slug as model_slug,
-             st.name as studio_name,
+             COALESCE(st.name, 'One-Shot Studio') as studio_name,
              st.slug as studio_slug
       FROM sets s
       JOIN models m ON s.model_id = m.id
@@ -303,7 +303,7 @@ class GalleryDatabase extends Database {
     `, [data.name, data.slug, data.description, data.model_id, data.release_date, data.location, 
         data.photographer, data.outfit_description, data.theme, data.cover_image_path, data.cover_thumb_path]);
     
-    return result.lastID;
+    return result.id;
   }
 
   // Media methods

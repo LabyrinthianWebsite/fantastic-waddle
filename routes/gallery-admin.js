@@ -296,7 +296,7 @@ router.get('/sets', requireAuth, async (req, res) => {
 router.get('/sets/new', requireAuth, async (req, res) => {
   try {
     const models = await req.db.all(`
-      SELECT m.*, s.name as studio_name 
+      SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name 
       FROM models m 
       LEFT JOIN studios s ON m.studio_id = s.id 
       ORDER BY m.name
