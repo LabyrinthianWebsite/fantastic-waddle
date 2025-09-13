@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account - CommissionDB</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="setup-container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <h1>Create Admin Account</h1>
+                <p>Create a new admin account for CommissionDB</p>
+            </div>
+
+            <% if (error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <% if (success) { %>
+                <div class="success-message">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <form class="setup-form" method="POST" action="/setup/create-account">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        required 
+                        minlength="3"
+                        class="form-input"
+                        placeholder="Enter your username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required 
+                        minlength="6"
+                        class="form-input"
+                        placeholder="Enter your password"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password:</label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        required 
+                        minlength="6"
+                        class="form-input"
+                        placeholder="Confirm your password"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-solid btn-full">
+                    Create Admin Account
+                </button>
+            </form>
+
+            <div class="setup-info">
+                <h3>Account Information</h3>
+                <ul>
+                    <li>This will create a new admin account</li>
+                    <li>Admin accounts have full access to the system</li>
+                    <li>You can create multiple admin accounts as needed</li>
+                    <li>After creation, you can log in with these credentials</li>
+                </ul>
+
+                <div class="security-note">
+                    <strong>Security Note:</strong> This application is designed to run locally only. 
+                    Anyone with access to this computer can use the admin panel.
+                </div>
+            </div>
+
+            <div class="navigation-links">
+                <a href="/admin/login" class="btn btn-outline">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .setup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            padding: 2rem;
+        }
+
+        .setup-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .setup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .setup-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .setup-form {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.25rem;
+        }
+
+        .btn-solid {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-solid:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .error-message {
+            background: rgba(255, 59, 92, 0.1);
+            color: #ff3b5c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #ff3b5c;
+        }
+
+        .success-message {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .setup-info {
+            background: var(--card-bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .setup-info h3 {
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .setup-info ul {
+            color: var(--text-secondary);
+            padding-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .setup-info li {
+            margin-bottom: 0.5rem;
+        }
+
+        .security-note {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .navigation-links {
+            text-align: center;
+        }
+
+        /* Dark theme variables */
+        :root {
+            --bg: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --card-bg-secondary: #363636;
+            --text: #ffffff;
+            --text-secondary: #b3b3b3;
+            --border: #404040;
+            --input-bg: #363636;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --primary-rgb: 99, 102, 241;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+
+    <script>
+        // Client-side validation
+        document.querySelector('.setup-form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match');
+                return false;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
