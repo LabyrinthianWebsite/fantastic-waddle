@@ -215,6 +215,71 @@
             color: #666;
         }
 
+        /* Media Controls */
+        .media-controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .sort-direction-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sort-direction-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .sort-direction-btn:active {
+            background: #667eea;
+            color: white;
+        }
+
+        #sort-arrow {
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
         .media-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -499,7 +564,7 @@
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/studios">Studios</a></li>
-                <li><a href="/models">Models</a></li>
+                <li><a href="/models">Sites/Models</a></li>
                 <li><a href="/sets">Sets</a></li>
             </ul>
         </nav>
@@ -570,48 +635,21 @@
                     <h2 class="section-title">Media</h2>
                     <p class="section-subtitle">Browse all media in this set</p>
                 </div>
-                <div class="media-grid">
-                    <% media.forEach((item, index) => { %>
-                        <div class="media-item" 
-                             onclick="openLightbox(<%= index %>)" 
-                             data-index="<%= index %>"
-                             data-filename="<%= item.filename || 'Untitled' %>"
-                             data-full-path="/<%= item.display_path %>"
-                             data-thumb-path="/<%= item.thumb_path || item.display_path %>"
-                             data-file-type="<%= item.file_type %>"
-                             data-file-size="<%= item.filesize ? Math.round(item.filesize / 1024) : '' %>"
-                             data-created="<%= item.created_at ? new Date(item.created_at).toLocaleDateString() : '' %>">
-                            <div class="media-preview">
-                                <% if (item.thumb_path || item.display_path) { %>
-                                    <img src="/<%= item.thumb_path || item.display_path %>" alt="<%= item.filename || 'Media item' %>" loading="lazy">
-                                <% } else { %>
-                                    🎬 <%= item.filename || 'Media' %>
-                                <% } %>
-                                <% if (item.file_type) { %>
-                                    <div class="media-type-indicator">
-                                        <%= item.file_type.toUpperCase() %>
-                                    </div>
-                                <% } %>
-                            </div>
-                            <div class="media-info">
-                                <div class="media-filename"><%= item.filename || 'Untitled' %></div>
-                                <div class="media-meta">
-                                    <% if (item.filesize) { %>
-                                        Size: <%= Math.round(item.filesize / 1024) %> KB
-                                    <% } %>
-                                    <% if (item.created_at) { %>
-                                        • <%= new Date(item.created_at).toLocaleDateString() %>
-                                    <% } %>
-                                </div>
-                                <div class="media-actions">
-                                    <button onclick="event.stopPropagation(); openLightbox(<%= index %>)" class="btn btn-primary">View</button>
-                                    <% if (item.display_path) { %>
-                                        <a href="/<%= item.display_path %>" class="btn btn-primary" target="_blank" onclick="event.stopPropagation()">Download</a>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                    <% }); %>
+                <div class="media-controls">
+                    <div class="sort-controls">
+                        <label for="sort-by" class="sort-label">Sort by:</label>
+                        <select id="sort-by" class="sort-select" onchange="sortMedia()">
+                            <option value="filename">Filename</option>
+                            <option value="upload-date">Upload Date</option>
+                            <option value="file-size">File Size</option>
+                        </select>
+                        <button id="sort-direction" class="sort-direction-btn" onclick="toggleSortDirection()" title="Toggle sort direction">
+                            <span id="sort-arrow">↑</span> Ascending
+                        </button>
+                    </div>
+                </div>
+                <div class="media-grid" id="media-grid">
+                    <!-- Media items will be populated by JavaScript for sorting -->
                 </div>
             <% } else { %>
                 <div class="empty-state">
@@ -642,17 +680,30 @@
         let currentImageIndex = 0;
         let mediaItems = [];
 
-        // Initialize media items data from the page
+        // Initialize media items data from server
+        <% if (media && media.length > 0) { %>
+        const serverMediaData = <%- JSON.stringify(media.map(item => ({
+            filename: item.filename || 'Untitled',
+            fullPath: item.display_path,
+            thumbPath: item.thumb_path || item.display_path,
+            fileType: item.file_type,
+            fileSize: item.filesize ? Math.round(item.filesize / 1024) : 0,
+            created: item.created_at
+        }))) %>;
+        <% } else { %>
+        const serverMediaData = [];
+        <% } %>
+
+        // Initialize media items data
         document.addEventListener('DOMContentLoaded', function() {
-            const mediaElements = document.querySelectorAll('.media-item[data-index]');
-            mediaItems = Array.from(mediaElements).map(el => ({
-                index: parseInt(el.dataset.index),
-                filename: el.dataset.filename,
-                fullPath: el.dataset.fullPath,
-                thumbPath: el.dataset.thumbPath,
-                fileType: el.dataset.fileType,
-                fileSize: el.dataset.fileSize,
-                created: el.dataset.created
+            mediaItems = serverMediaData.map((item, index) => ({
+                index: index,
+                filename: item.filename,
+                fullPath: item.fullPath,
+                thumbPath: item.thumbPath,
+                fileType: item.fileType,
+                fileSize: item.fileSize,
+                created: item.created
             }));
         });
 
@@ -731,6 +782,165 @@
                 closeLightbox();
             }
         });
+
+        // Sorting functionality
+        let currentSortBy = 'filename';
+        let currentSortDirection = 'asc';
+        let originalMediaOrder = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store original order
+            originalMediaOrder = [...mediaItems];
+            // Set default sorting to filename ascending
+            sortMedia();
+        });
+
+        function sortMedia() {
+            const sortBy = document.getElementById('sort-by').value;
+            currentSortBy = sortBy;
+            
+            const sortedItems = [...mediaItems].sort((a, b) => {
+                let valueA, valueB;
+                
+                switch(sortBy) {
+                    case 'filename':
+                        valueA = (a.filename || 'Untitled').toLowerCase();
+                        valueB = (b.filename || 'Untitled').toLowerCase();
+                        break;
+                    case 'upload-date':
+                        valueA = new Date(a.created || 0);
+                        valueB = new Date(b.created || 0);
+                        break;
+                    case 'file-size':
+                        valueA = parseInt(a.fileSize) || 0;
+                        valueB = parseInt(b.fileSize) || 0;
+                        break;
+                    default:
+                        valueA = a.filename || '';
+                        valueB = b.filename || '';
+                }
+                
+                if (currentSortDirection === 'asc') {
+                    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                } else {
+                    return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+                }
+            });
+            
+            renderSortedMedia(sortedItems);
+        }
+
+        function toggleSortDirection() {
+            currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            const arrow = document.getElementById('sort-arrow');
+            const button = document.getElementById('sort-direction');
+            
+            if (currentSortDirection === 'asc') {
+                arrow.textContent = '↑';
+                button.innerHTML = '<span id="sort-arrow">↑</span> Ascending';
+            } else {
+                arrow.textContent = '↓';
+                button.innerHTML = '<span id="sort-arrow">↓</span> Descending';
+            }
+            
+            sortMedia();
+        }
+
+        function renderSortedMedia(sortedItems) {
+            const mediaGrid = document.getElementById('media-grid');
+            mediaGrid.innerHTML = '';
+            
+            sortedItems.forEach((item, newIndex) => {
+                const mediaElement = createMediaElement(item, newIndex);
+                mediaGrid.appendChild(mediaElement);
+            });
+            
+            // Update mediaItems array to reflect new order for lightbox navigation
+            mediaItems = sortedItems;
+        }
+
+        function createMediaElement(item, index) {
+            const mediaItem = document.createElement('div');
+            mediaItem.className = 'media-item';
+            mediaItem.onclick = () => openLightbox(index);
+            mediaItem.setAttribute('data-index', index);
+            mediaItem.setAttribute('data-filename', item.filename);
+            mediaItem.setAttribute('data-full-path', item.fullPath);
+            mediaItem.setAttribute('data-thumb-path', item.thumbPath);
+            mediaItem.setAttribute('data-file-type', item.fileType);
+            mediaItem.setAttribute('data-file-size', item.fileSize);
+            mediaItem.setAttribute('data-created', item.created);
+            
+            const preview = document.createElement('div');
+            preview.className = 'media-preview';
+            
+            if (item.thumbPath || item.fullPath) {
+                const img = document.createElement('img');
+                img.src = '/' + (item.thumbPath || item.fullPath);
+                img.alt = item.filename || 'Media item';
+                img.loading = 'lazy';
+                preview.appendChild(img);
+            } else {
+                preview.innerHTML = '🎬 ' + (item.filename || 'Media');
+            }
+            
+            if (item.fileType) {
+                const indicator = document.createElement('div');
+                indicator.className = 'media-type-indicator';
+                indicator.textContent = item.fileType.toUpperCase();
+                preview.appendChild(indicator);
+            }
+            
+            const info = document.createElement('div');
+            info.className = 'media-info';
+            
+            const filename = document.createElement('div');
+            filename.className = 'media-filename';
+            filename.textContent = item.filename || 'Untitled';
+            
+            const meta = document.createElement('div');
+            meta.className = 'media-meta';
+            let metaText = '';
+            if (item.fileSize) {
+                metaText += 'Size: ' + Math.round(item.fileSize) + ' KB';
+            }
+            if (item.created) {
+                metaText += (metaText ? ' • ' : '') + new Date(item.created).toLocaleDateString();
+            }
+            meta.textContent = metaText;
+            
+            const actions = document.createElement('div');
+            actions.className = 'media-actions';
+            
+            const viewBtn = document.createElement('button');
+            viewBtn.className = 'btn btn-primary';
+            viewBtn.textContent = 'View';
+            viewBtn.onclick = (e) => {
+                e.stopPropagation();
+                openLightbox(index);
+            };
+            
+            actions.appendChild(viewBtn);
+            
+            if (item.fullPath) {
+                const downloadBtn = document.createElement('a');
+                downloadBtn.className = 'btn btn-primary';
+                downloadBtn.textContent = 'Download';
+                downloadBtn.href = '/' + item.fullPath;
+                downloadBtn.target = '_blank';
+                downloadBtn.onclick = (e) => e.stopPropagation();
+                actions.appendChild(downloadBtn);
+            }
+            
+            info.appendChild(filename);
+            info.appendChild(meta);
+            info.appendChild(actions);
+            
+            mediaItem.appendChild(preview);
+            mediaItem.appendChild(info);
+            
+            return mediaItem;
+        }
     </script>
 </body>
 </html>

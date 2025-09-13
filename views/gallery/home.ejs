@@ -278,7 +278,7 @@
             <ul class="nav-links">
                 <li><a href="/" class="<%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>">Home</a></li>
                 <li><a href="/studios" class="<%= typeof page !== 'undefined' && page === 'studios' ? 'active' : '' %>">Studios</a></li>
-                <li><a href="/models" class="<%= typeof page !== 'undefined' && page === 'models' ? 'active' : '' %>">Models</a></li>
+                <li><a href="/models" class="<%= typeof page !== 'undefined' && page === 'models' ? 'active' : '' %>">Sites/Models</a></li>
                 <li><a href="/sets" class="<%= typeof page !== 'undefined' && page === 'sets' ? 'active' : '' %>">Sets</a></li>
                 <li><a href="/admin" class="<%= typeof page !== 'undefined' && page === 'admin' ? 'active' : '' %>">Admin</a></li>
             </ul>
@@ -304,7 +304,7 @@
                 </div>
                 <div class="stat-card">
                     <span class="stat-number"><%= stats.models.count %></span>
-                    <span class="stat-label">Models</span>
+                    <span class="stat-label">Sites/Models</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number"><%= stats.sets.count %></span>
@@ -350,7 +350,7 @@
 
             <% if (models.length > 0) { %>
             <div class="content-card">
-                <h2 class="section-title">Featured Models</h2>
+                <h2 class="section-title">Featured Sites/Models</h2>
                 <div class="grid grid-4 model-grid">
                     <% models.forEach(model => { %>
                     <div class="card">
@@ -375,7 +375,7 @@
                     <% }); %>
                 </div>
                 <div style="text-align: center; margin-top: 2rem;">
-                    <a href="/models" class="btn btn-secondary">View All Models</a>
+                    <a href="/models" class="btn btn-secondary">View All Sites/Models</a>
                 </div>
             </div>
             <% } %>
