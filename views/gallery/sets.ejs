@@ -248,20 +248,24 @@
                         <div class="set-card">
                             <div class="set-image">
                                 <% if (set.cover_image_path) { %>
-                                    <img src="<%= set.cover_image_path %>" alt="<%= set.title %>" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <img src="<%= set.cover_image_path %>" alt="<%= set.name %>" style="width: 100%; height: 100%; object-fit: cover;">
                                 <% } else { %>
                                     <span>No Image</span>
                                 <% } %>
                             </div>
                             <div class="set-info">
-                                <div class="set-title"><%= set.title || 'Untitled Set' %></div>
+                                <div class="set-title">
+                                    <a href="/sets/<%= set.slug %>" style="text-decoration: none; color: inherit;">
+                                        <%= set.name || 'Untitled Set' %>
+                                    </a>
+                                </div>
                                 <div class="set-meta">
                                     <% if (set.model_name) { %>Model: <%= set.model_name %><br><% } %>
                                     <% if (set.studio_name) { %>Studio: <%= set.studio_name %><br><% } %>
-                                    <% if (set.shoot_date) { %>Date: <%= new Date(set.shoot_date).toLocaleDateString() %><% } %>
+                                    <% if (set.release_date) { %>Date: <%= new Date(set.release_date).toLocaleDateString() %><% } else if (set.created_at) { %>Created: <%= new Date(set.created_at).toLocaleDateString() %><% } %>
                                 </div>
                                 <div class="set-stats">
-                                    <span><%= set.media_count || 0 %> images</span>
+                                    <span><%= set.image_count || 0 %> images</span>
                                     <span>ID: <%= set.id %></span>
                                 </div>
                             </div>
