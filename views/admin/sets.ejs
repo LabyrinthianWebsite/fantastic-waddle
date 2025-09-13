@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            text-decoration: none;
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        /* Main content */
+        main {
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Content */
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Sets grid */
+        .sets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .set-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .set-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .set-cover {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .set-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .set-cover-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .set-content {
+            padding: 1.5rem;
+        }
+
+        .set-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .set-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 0;
+            flex: 1;
+        }
+
+        .set-model {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .set-studio {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .set-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .set-meta {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+
+        .set-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .sets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Gallery Suite Admin</a>
+            <ul class="nav-links">
+                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="/admin/studios">Studios</a></li>
+                <li><a href="/admin/models">Models</a></li>
+                <li><a href="/admin/sets" class="active">Sets</a></li>
+            </ul>
+            <div class="user-menu">
+                <span>Welcome, Admin</span>
+                <a href="/admin/logout" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Sets</h1>
+                <a href="/admin/sets/new" class="btn">Add New Set</a>
+            </div>
+
+            <% if (sets.length === 0) { %>
+            <div class="content-card">
+                <div class="empty-state">
+                    <div class="empty-icon">📸</div>
+                    <h3>No Sets Yet</h3>
+                    <p>Sets are collections of photos featuring your models. Start by creating your first photo set to showcase your content.</p>
+                    <a href="/admin/sets/new" class="btn">Create First Set</a>
+                </div>
+            </div>
+            <% } else { %>
+            <div class="sets-grid">
+                <% sets.forEach(set => { %>
+                <div class="set-card">
+                    <div class="set-cover">
+                        <% if (set.cover_thumb_path) { %>
+                        <img src="/<%= set.cover_thumb_path %>" alt="<%= set.name %>">
+                        <% } else { %>
+                        <div class="set-cover-placeholder">
+                            <%= set.name.substring(0, 2).toUpperCase() %>
+                        </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="set-content">
+                        <div class="set-header">
+                            <h3 class="set-name"><%= set.name %></h3>
+                        </div>
+                        
+                        <% if (set.model_name) { %>
+                        <div class="set-model">
+                            👤 <%= set.model_name %>
+                        </div>
+                        <% } %>
+                        
+                        <% if (set.studio_name) { %>
+                        <div class="set-studio">
+                            📍 <%= set.studio_name %>
+                        </div>
+                        <% } %>
+                        
+                        <div class="set-stats">
+                            <span>📸 <%= set.image_count || 0 %> images</span>
+                            <% if (set.video_count && set.video_count > 0) { %>
+                            <span>🎥 <%= set.video_count %> videos</span>
+                            <% } %>
+                        </div>
+                        
+                        <% if (set.release_date || set.location || set.photographer) { %>
+                        <div class="set-meta">
+                            <% if (set.release_date) { %>📅 <%= new Date(set.release_date).toLocaleDateString() %><% } %>
+                            <% if (set.release_date && (set.location || set.photographer)) { %> • <% } %>
+                            <% if (set.location) { %>📍 <%= set.location %><% } %>
+                            <% if (set.location && set.photographer) { %> • <% } %>
+                            <% if (set.photographer) { %>📷 <%= set.photographer %><% } %>
+                        </div>
+                        <% } %>
+                        
+                        <div class="set-actions">
+                            <a href="/sets/<%= set.slug %>" class="btn btn-sm btn-secondary">View</a>
+                            <a href="/admin/sets/<%= set.id %>/edit" class="btn btn-sm">Edit</a>
+                            <a href="/admin/sets/<%= set.id %>/upload" class="btn btn-sm btn-secondary">Upload</a>
+                            <button onclick="deleteSet(<%= set.id %>, '<%= set.name %>')" class="btn btn-sm btn-danger">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        function deleteSet(id, name) {
+            if (confirm(`Are you sure you want to delete the set "${name}"? This will also delete all associated media files. This action cannot be undone.`)) {
+                fetch(`/admin/sets/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to delete set');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete set');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
