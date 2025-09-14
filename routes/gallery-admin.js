@@ -642,7 +642,20 @@ router.get('/sets/:id/upload', requireAuth, async (req, res) => {
 router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async (req, res) => {
   try {
     const setId = parseInt(req.params.id);
-    const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
+    
+    // Get set with studio information for proper directory structure
+    const set = await req.db.getSetBySlug(req.params.id) || 
+                await req.db.get(`
+                  SELECT s.*, 
+                         m.name as model_name,
+                         m.slug as model_slug,
+                         st.name as studio_name,
+                         st.slug as studio_slug
+                  FROM sets s
+                  JOIN models m ON s.model_id = m.id
+                  LEFT JOIN studios st ON m.studio_id = st.id
+                  WHERE s.id = ?
+                `, [setId]);
     
     if (!set) {
       return res.status(404).json({ error: 'Set not found' });
@@ -652,8 +665,11 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    const mediaDir = path.join(__dirname, '../uploads/media', set.slug);
-    const thumbsDir = path.join(__dirname, '../uploads/thumbs', set.slug);
+    // Create hierarchical directory structure: /[Studio Name]/[Set Name]/
+    const studioName = set.studio_name || 'Independent';
+    const studioSlug = set.studio_slug || 'independent';
+    const mediaDir = path.join(__dirname, '../uploads/media', studioSlug, set.slug);
+    const thumbsDir = path.join(__dirname, '../uploads/thumbs', studioSlug, set.slug);
     await fs.ensureDir(mediaDir);
     await fs.ensureDir(thumbsDir);
 
@@ -712,8 +728,8 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
         const fileName = `${originalBaseName}_${hashSuffix}${fileExt}`;
         
         const finalPath = path.join(mediaDir, fileName);
-        const relativePath = `uploads/media/${set.slug}/${fileName}`;
-        const thumbPath = `uploads/thumbs/${set.slug}/${originalBaseName}_${hashSuffix}.webp`;
+        const relativePath = `uploads/media/${studioSlug}/${set.slug}/${fileName}`;
+        const thumbPath = `uploads/thumbs/${studioSlug}/${set.slug}/${originalBaseName}_${hashSuffix}.webp`;
 
         // Move file to final location
         await fs.move(file.path, finalPath);
