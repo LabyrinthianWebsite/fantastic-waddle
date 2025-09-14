@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const slugify = require('slugify');
 const sharp = require('sharp');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 
@@ -39,7 +40,7 @@ const upload = multer({
   storage: storage,
   limits: {
     fileSize: 50 * 1024 * 1024 * 1024, // 50GB limit per file
-    files: 1000 // Maximum 1000 files per upload
+    files: 5000 // Maximum 5000 files per upload
   },
   fileFilter: (req, file, cb) => {
     // Accept images and videos
@@ -638,7 +639,7 @@ router.get('/sets/:id/upload', requireAuth, async (req, res) => {
 });
 
 // Handle bulk media upload
-router.post('/sets/:id/upload', requireAuth, upload.array('media', 1000), async (req, res) => {
+router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async (req, res) => {
   try {
     const setId = parseInt(req.params.id);
     const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
@@ -657,75 +658,124 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 1000), async 
     await fs.ensureDir(thumbsDir);
 
     const results = [];
+    const skippedDuplicates = [];
+    let processedCount = 0;
 
     for (let i = 0; i < req.files.length; i++) {
       const file = req.files[i];
       const fileExt = path.extname(file.originalname);
-      const baseName = path.basename(file.originalname, fileExt);
-      const fileName = `${baseName}${fileExt}`;
+      const originalBaseName = path.basename(file.originalname, fileExt);
       
-      const finalPath = path.join(mediaDir, fileName);
-      const relativePath = `uploads/media/${set.slug}/${fileName}`;
-      const thumbPath = `uploads/thumbs/${set.slug}/${baseName}.webp`;
-
-      // Move file to final location
-      await fs.move(file.path, finalPath);
-
       // Determine file type
       const fileType = file.mimetype.startsWith('video/') ? 'video' : 'image';
       
+      let fileHash = null;
       let width = null, height = null, duration = null;
 
       try {
+        // Generate hash for duplicate detection
         if (fileType === 'image') {
-          // Get image dimensions and create thumbnail
-          const metadata = await sharp(finalPath).metadata();
+          fileHash = await req.imageProcessor.extractImageMetadata(file.path).then(metadata => metadata.perceptualHash);
+          
+          // Get image dimensions
+          const metadata = await sharp(file.path).metadata();
           width = metadata.width;
           height = metadata.height;
-
-          // Create WebP thumbnail
-          await sharp(finalPath)
-            .resize(400, 300, { fit: 'cover', withoutEnlargement: true })
-            .webp({ quality: 80 })
-            .toFile(path.join(__dirname, '..', thumbPath));
         } else {
-          // For videos, create a placeholder thumbnail
-          // In a real implementation, you'd use ffmpeg to extract a frame
-          const placeholderThumb = path.join(__dirname, '../public/images/video-placeholder.png');
-          if (await fs.pathExists(placeholderThumb)) {
-            await fs.copy(placeholderThumb, path.join(__dirname, '..', thumbPath));
-          }
+          // For videos, create a simple content hash
+          const crypto = require('crypto');
+          const fileBuffer = await fs.readFile(file.path);
+          fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
         }
-      } catch (thumbError) {
-        console.warn('Thumbnail creation failed:', thumbError);
+
+        // Check for duplicate hash in the database
+        const existingMedia = await req.db.get(
+          'SELECT id, filename FROM media WHERE set_id = ? AND hash = ?',
+          [setId, fileHash]
+        );
+
+        if (existingMedia) {
+          // Skip duplicate file
+          skippedDuplicates.push({
+            originalName: file.originalname,
+            existingFilename: existingMedia.filename,
+            hash: fileHash
+          });
+          
+          // Clean up temporary file
+          await fs.remove(file.path);
+          continue;
+        }
+
+        // Generate unique filename using hash prefix
+        const hashPrefix = fileHash.substring(0, 8);
+        const fileName = `${hashPrefix}_${originalBaseName}${fileExt}`;
+        
+        const finalPath = path.join(mediaDir, fileName);
+        const relativePath = `uploads/media/${set.slug}/${fileName}`;
+        const thumbPath = `uploads/thumbs/${set.slug}/${hashPrefix}_${originalBaseName}.webp`;
+
+        // Move file to final location
+        await fs.move(file.path, finalPath);
+
+        try {
+          if (fileType === 'image') {
+            // Create WebP thumbnail
+            await sharp(finalPath)
+              .resize(400, 300, { fit: 'cover', withoutEnlargement: true })
+              .webp({ quality: 80 })
+              .toFile(path.join(__dirname, '..', thumbPath));
+          } else {
+            // For videos, create a placeholder thumbnail
+            const placeholderThumb = path.join(__dirname, '../public/images/video-placeholder.png');
+            if (await fs.pathExists(placeholderThumb)) {
+              await fs.copy(placeholderThumb, path.join(__dirname, '..', thumbPath));
+            }
+          }
+        } catch (thumbError) {
+          console.warn('Thumbnail creation failed:', thumbError);
+        }
+
+        // Get file stats
+        const stats = await fs.stat(finalPath);
+
+        // Save to database
+        const mediaId = await req.db.createMedia({
+          set_id: setId,
+          filename: fileName,
+          original_path: relativePath,
+          display_path: relativePath,
+          thumb_path: thumbPath,
+          file_type: fileType,
+          mime_type: file.mimetype,
+          filesize: stats.size,
+          width: width,
+          height: height,
+          duration: duration,
+          sort_order: processedCount,
+          hash: fileHash
+        });
+
+        results.push({
+          id: mediaId,
+          filename: fileName,
+          originalName: file.originalname,
+          size: stats.size,
+          type: fileType,
+          hash: fileHash
+        });
+
+        processedCount++;
+
+      } catch (error) {
+        console.error(`Error processing file ${file.originalname}:`, error);
+        // Clean up temporary file on error
+        try {
+          await fs.remove(file.path);
+        } catch (cleanupError) {
+          console.warn('Failed to clean up temporary file:', cleanupError);
+        }
       }
-
-      // Get file stats
-      const stats = await fs.stat(finalPath);
-
-      // Save to database
-      const mediaId = await req.db.createMedia({
-        set_id: setId,
-        filename: fileName,
-        original_path: relativePath,
-        display_path: relativePath,
-        thumb_path: thumbPath,
-        file_type: fileType,
-        mime_type: file.mimetype,
-        filesize: stats.size,
-        width: width,
-        height: height,
-        duration: duration,
-        sort_order: i,
-        hash: null // TODO: Implement hash calculation for duplicate detection
-      });
-
-      results.push({
-        id: mediaId,
-        filename: fileName,
-        size: stats.size,
-        type: fileType
-      });
     }
 
     // Update set statistics
@@ -734,7 +784,10 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 1000), async 
     res.json({
       success: true,
       uploaded: results.length,
-      files: results
+      skipped: skippedDuplicates.length,
+      total: req.files.length,
+      files: results,
+      duplicates: skippedDuplicates
     });
 
   } catch (error) {
