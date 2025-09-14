@@ -191,6 +191,85 @@ router.post('/studios', requireAuth, upload.single('logo'), async (req, res) => 
   }
 });
 
+// Studio edit routes
+router.get('/studios/:id/edit', requireAuth, async (req, res) => {
+  try {
+    const studioId = parseInt(req.params.id);
+    const studio = await req.db.get('SELECT * FROM studios WHERE id = ?', [studioId]);
+    
+    if (!studio) {
+      return res.status(404).render('error', { 
+        error: 'Studio not found',
+        status: 404 
+      });
+    }
+
+    res.render('admin/studio-form', {
+      title: 'Edit Studio - Admin - Gallery Suite',
+      studio: studio,
+      isEdit: true
+    });
+  } catch (error) {
+    console.error('Studio edit form error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to load studio',
+      status: 500 
+    });
+  }
+});
+
+router.post('/studios/:id', requireAuth, upload.single('logo'), async (req, res) => {
+  try {
+    const studioId = parseInt(req.params.id);
+    const studio = await req.db.get('SELECT * FROM studios WHERE id = ?', [studioId]);
+    
+    if (!studio) {
+      return res.status(404).render('error', { 
+        error: 'Studio not found',
+        status: 404 
+      });
+    }
+
+    const { name, description, website_url, location, established_date } = req.body;
+    const slug = createSlug(name);
+
+    let logoPath = studio.logo_path;
+    let logoThumbPath = studio.logo_thumb_path;
+
+    if (req.file) {
+      const logoDir = path.join(__dirname, '../uploads/studios');
+      await fs.ensureDir(logoDir);
+
+      logoPath = `uploads/studios/${slug}-logo${path.extname(req.file.originalname)}`;
+      logoThumbPath = `uploads/studios/${slug}-logo-thumb.webp`;
+
+      // Move and process logo
+      await fs.move(req.file.path, path.join(__dirname, '..', logoPath));
+      
+      // Create thumbnail
+      await sharp(path.join(__dirname, '..', logoPath))
+        .resize(200, 200, { fit: 'cover' })
+        .webp({ quality: 80 })
+        .toFile(path.join(__dirname, '..', logoThumbPath));
+    }
+
+    await req.db.run(`
+      UPDATE studios 
+      SET name = ?, slug = ?, description = ?, logo_path = ?, logo_thumb_path = ?, 
+          website_url = ?, location = ?, established_date = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [name, slug, description, logoPath, logoThumbPath, website_url, location, established_date, studioId]);
+
+    res.redirect('/admin/studios');
+  } catch (error) {
+    console.error('Studio update error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to update studio',
+      status: 500 
+    });
+  }
+});
+
 // Models management
 router.get('/models', requireAuth, async (req, res) => {
   try {
@@ -276,6 +355,91 @@ router.post('/models', requireAuth, upload.single('profile_image'), async (req, 
   }
 });
 
+// Model edit routes
+router.get('/models/:id/edit', requireAuth, async (req, res) => {
+  try {
+    const modelId = parseInt(req.params.id);
+    const model = await req.db.get('SELECT * FROM models WHERE id = ?', [modelId]);
+    
+    if (!model) {
+      return res.status(404).render('error', { 
+        error: 'Model not found',
+        status: 404 
+      });
+    }
+
+    const studios = await req.db.all('SELECT * FROM studios ORDER BY name');
+    res.render('admin/model-form', {
+      title: 'Edit Model - Admin - Gallery Suite',
+      model: model,
+      studios: studios,
+      isEdit: true
+    });
+  } catch (error) {
+    console.error('Model edit form error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to load model',
+      status: 500 
+    });
+  }
+});
+
+router.post('/models/:id', requireAuth, upload.single('profile_image'), async (req, res) => {
+  try {
+    const modelId = parseInt(req.params.id);
+    const model = await req.db.get('SELECT * FROM models WHERE id = ?', [modelId]);
+    
+    if (!model) {
+      return res.status(404).render('error', { 
+        error: 'Model not found',
+        status: 404 
+      });
+    }
+
+    const { name, description, studio_id, age, measurements, height, 
+            eye_color, hair_color, nationality, instagram_url, twitter_url, website_url, active } = req.body;
+    const slug = createSlug(name);
+
+    let profileImagePath = model.profile_image_path;
+    let profileThumbPath = model.profile_thumb_path;
+
+    if (req.file) {
+      const modelsDir = path.join(__dirname, '../uploads/models');
+      await fs.ensureDir(modelsDir);
+
+      profileImagePath = `uploads/models/${slug}-profile${path.extname(req.file.originalname)}`;
+      profileThumbPath = `uploads/models/${slug}-profile-thumb.webp`;
+
+      // Move and process profile image
+      await fs.move(req.file.path, path.join(__dirname, '..', profileImagePath));
+      
+      // Create thumbnail
+      await sharp(path.join(__dirname, '..', profileImagePath))
+        .resize(300, 400, { fit: 'cover' })
+        .webp({ quality: 80 })
+        .toFile(path.join(__dirname, '..', profileThumbPath));
+    }
+
+    await req.db.run(`
+      UPDATE models 
+      SET name = ?, slug = ?, description = ?, studio_id = ?, profile_image_path = ?, profile_thumb_path = ?, 
+          age = ?, measurements = ?, height = ?, eye_color = ?, hair_color = ?, nationality = ?,
+          instagram_url = ?, twitter_url = ?, website_url = ?, active = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [name, slug, description, studio_id || null, profileImagePath, profileThumbPath, 
+        age || null, measurements, height, eye_color, hair_color, nationality,
+        instagram_url, twitter_url, website_url, active ? 1 : 0, modelId]);
+
+    res.redirect('/admin/models');
+  } catch (error) {
+    console.error('Model update error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to update model',
+      status: 500 
+    });
+  }
+});
+
 // Sets management
 router.get('/sets', requireAuth, async (req, res) => {
   try {
@@ -354,6 +518,97 @@ router.post('/sets', requireAuth, upload.single('cover_image'), async (req, res)
     console.error('Set creation error:', error);
     res.status(500).render('error', { 
       error: 'Failed to create set',
+      status: 500 
+    });
+  }
+});
+
+// Set edit routes
+router.get('/sets/:id/edit', requireAuth, async (req, res) => {
+  try {
+    const setId = parseInt(req.params.id);
+    const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
+    
+    if (!set) {
+      return res.status(404).render('error', { 
+        error: 'Set not found',
+        status: 404 
+      });
+    }
+
+    const models = await req.db.all(`
+      SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name 
+      FROM models m 
+      LEFT JOIN studios s ON m.studio_id = s.id 
+      WHERE m.active = 1 OR m.active IS NULL
+      ORDER BY m.name
+    `);
+
+    res.render('admin/set-form', {
+      title: 'Edit Set - Admin - Gallery Suite',
+      set: set,
+      models: models,
+      isEdit: true
+    });
+  } catch (error) {
+    console.error('Set edit form error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to load set',
+      status: 500 
+    });
+  }
+});
+
+router.post('/sets/:id', requireAuth, upload.single('cover_image'), async (req, res) => {
+  try {
+    const setId = parseInt(req.params.id);
+    const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
+    
+    if (!set) {
+      return res.status(404).render('error', { 
+        error: 'Set not found',
+        status: 404 
+      });
+    }
+
+    const { name, description, model_id, release_date, location, 
+            photographer, outfit_description, theme } = req.body;
+    const slug = createSlug(name);
+
+    let coverImagePath = set.cover_image_path;
+    let coverThumbPath = set.cover_thumb_path;
+
+    if (req.file) {
+      const setsDir = path.join(__dirname, '../uploads/sets');
+      await fs.ensureDir(setsDir);
+
+      coverImagePath = `uploads/sets/${slug}-cover${path.extname(req.file.originalname)}`;
+      coverThumbPath = `uploads/sets/${slug}-cover-thumb.webp`;
+
+      // Move and process cover image
+      await fs.move(req.file.path, path.join(__dirname, '..', coverImagePath));
+      
+      // Create thumbnail
+      await sharp(path.join(__dirname, '..', coverImagePath))
+        .resize(400, 300, { fit: 'cover' })
+        .webp({ quality: 80 })
+        .toFile(path.join(__dirname, '..', coverThumbPath));
+    }
+
+    await req.db.run(`
+      UPDATE sets 
+      SET name = ?, slug = ?, description = ?, model_id = ?, release_date = ?, location = ?, 
+          photographer = ?, outfit_description = ?, theme = ?, cover_image_path = ?, cover_thumb_path = ?, 
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [name, slug, description, model_id, release_date, location, 
+        photographer, outfit_description, theme, coverImagePath, coverThumbPath, setId]);
+
+    res.redirect('/admin/sets');
+  } catch (error) {
+    console.error('Set update error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to update set',
       status: 500 
     });
   }
