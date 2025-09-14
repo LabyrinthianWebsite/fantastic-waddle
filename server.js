@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
+const methodOverride = require('method-override');
 const GalleryDatabase = require('./database/galleryDatabase');
 const CacheManager = require('./middleware/cacheManager');
 const BackupManager = require('./middleware/backupManager');
@@ -92,6 +93,9 @@ app.set('views', path.join(__dirname, 'views'));
 // Body parsing middleware with increased limits for large uploads
 app.use(express.json({ limit: '50gb' }));
 app.use(express.urlencoded({ extended: true, limit: '50gb' }));
+
+// Method override middleware for PUT/DELETE support in forms
+app.use(methodOverride('_method'));
 
 // Static file serving
 app.use('/public', express.static(path.join(__dirname, 'public')));

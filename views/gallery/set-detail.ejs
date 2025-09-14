@@ -683,6 +683,7 @@
         // Initialize media items data from server
         <% if (media && media.length > 0) { %>
         const serverMediaData = <%- JSON.stringify(media.map(item => ({
+            id: item.id,
             filename: item.filename || 'Untitled',
             fullPath: item.display_path,
             thumbPath: item.thumb_path || item.display_path,
@@ -698,6 +699,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             mediaItems = serverMediaData.map((item, index) => ({
                 index: index,
+                id: item.id,
                 filename: item.filename,
                 fullPath: item.fullPath,
                 thumbPath: item.thumbPath,
@@ -912,15 +914,38 @@
             const actions = document.createElement('div');
             actions.className = 'media-actions';
             
-            const viewBtn = document.createElement('button');
-            viewBtn.className = 'btn btn-primary';
-            viewBtn.textContent = 'View';
-            viewBtn.onclick = (e) => {
-                e.stopPropagation();
-                openLightbox(index);
-            };
+            // Add different buttons based on media type
+            if (item.fileType === 'video') {
+                const playBtn = document.createElement('a');
+                playBtn.className = 'btn btn-primary';
+                playBtn.textContent = '▶️ Play';
+                playBtn.href = '/media/' + item.id;
+                playBtn.style.background = '#28a745';
+                playBtn.onclick = (e) => {
+                    e.stopPropagation();
+                };
+                actions.appendChild(playBtn);
+            } else {
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn btn-primary';
+                viewBtn.textContent = 'View';
+                viewBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openLightbox(index);
+                };
+                actions.appendChild(viewBtn);
+            }
             
-            actions.appendChild(viewBtn);
+            // Detail view button for all media types
+            const detailBtn = document.createElement('a');
+            detailBtn.className = 'btn btn-secondary';
+            detailBtn.textContent = 'Details';
+            detailBtn.href = '/media/' + item.id;
+            detailBtn.style.marginLeft = '0.5rem';
+            detailBtn.onclick = (e) => {
+                e.stopPropagation();
+            };
+            actions.appendChild(detailBtn);
             
             if (item.fullPath) {
                 const downloadBtn = document.createElement('a');

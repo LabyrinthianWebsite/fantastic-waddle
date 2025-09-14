@@ -642,7 +642,20 @@ router.get('/sets/:id/upload', requireAuth, async (req, res) => {
 router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async (req, res) => {
   try {
     const setId = parseInt(req.params.id);
-    const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
+    
+    // Get set with studio information for proper directory structure
+    const set = await req.db.getSetBySlug(req.params.id) || 
+                await req.db.get(`
+                  SELECT s.*, 
+                         m.name as model_name,
+                         m.slug as model_slug,
+                         st.name as studio_name,
+                         st.slug as studio_slug
+                  FROM sets s
+                  JOIN models m ON s.model_id = m.id
+                  LEFT JOIN studios st ON m.studio_id = st.id
+                  WHERE s.id = ?
+                `, [setId]);
     
     if (!set) {
       return res.status(404).json({ error: 'Set not found' });
@@ -652,8 +665,11 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    const mediaDir = path.join(__dirname, '../uploads/media', set.slug);
-    const thumbsDir = path.join(__dirname, '../uploads/thumbs', set.slug);
+    // Create hierarchical directory structure: /[Studio Name]/[Set Name]/
+    const studioName = set.studio_name || 'Independent';
+    const studioSlug = set.studio_slug || 'independent';
+    const mediaDir = path.join(__dirname, '../uploads/media', studioSlug, set.slug);
+    const thumbsDir = path.join(__dirname, '../uploads/thumbs', studioSlug, set.slug);
     await fs.ensureDir(mediaDir);
     await fs.ensureDir(thumbsDir);
 
@@ -712,8 +728,8 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
         const fileName = `${originalBaseName}_${hashSuffix}${fileExt}`;
         
         const finalPath = path.join(mediaDir, fileName);
-        const relativePath = `uploads/media/${set.slug}/${fileName}`;
-        const thumbPath = `uploads/thumbs/${set.slug}/${originalBaseName}_${hashSuffix}.webp`;
+        const relativePath = `uploads/media/${studioSlug}/${set.slug}/${fileName}`;
+        const thumbPath = `uploads/thumbs/${studioSlug}/${set.slug}/${originalBaseName}_${hashSuffix}.webp`;
 
         // Move file to final location
         await fs.move(file.path, finalPath);
@@ -796,6 +812,187 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
       error: 'Upload failed', 
       details: error.message 
     });
+  }
+});
+
+// DELETE Routes for Studios, Models, and Sets
+
+// Delete Studio
+router.delete('/studios/:id', requireAuth, async (req, res) => {
+  try {
+    const studioId = parseInt(req.params.id);
+    
+    // Check if studio exists
+    const studio = await req.db.get('SELECT * FROM studios WHERE id = ?', [studioId]);
+    if (!studio) {
+      return res.status(404).json({ error: 'Studio not found' });
+    }
+
+    // Get all models and sets associated with this studio for cleanup
+    const models = await req.db.all('SELECT * FROM models WHERE studio_id = ?', [studioId]);
+    
+    // Delete all media files for sets associated with models in this studio
+    for (const model of models) {
+      const sets = await req.db.all('SELECT * FROM sets WHERE model_id = ?', [model.id]);
+      for (const set of sets) {
+        // Delete media files
+        const media = await req.db.all('SELECT * FROM media WHERE set_id = ?', [set.id]);
+        for (const item of media) {
+          try {
+            const fullPath = path.join(__dirname, '..', item.original_path);
+            const thumbPath = path.join(__dirname, '..', item.thumb_path);
+            await fs.remove(fullPath);
+            await fs.remove(thumbPath);
+          } catch (fileError) {
+            console.warn('File deletion error:', fileError);
+          }
+        }
+        // Delete media records
+        await req.db.run('DELETE FROM media WHERE set_id = ?', [set.id]);
+      }
+      // Delete sets
+      await req.db.run('DELETE FROM sets WHERE model_id = ?', [model.id]);
+    }
+
+    // Delete models
+    await req.db.run('DELETE FROM models WHERE studio_id = ?', [studioId]);
+
+    // Delete studio logo files
+    if (studio.logo_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', studio.logo_path));
+      } catch (fileError) {
+        console.warn('Logo file deletion error:', fileError);
+      }
+    }
+    if (studio.logo_thumb_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', studio.logo_thumb_path));
+      } catch (fileError) {
+        console.warn('Logo thumb deletion error:', fileError);
+      }
+    }
+
+    // Delete studio record
+    await req.db.run('DELETE FROM studios WHERE id = ?', [studioId]);
+
+    res.json({ success: true, message: 'Studio deleted successfully' });
+  } catch (error) {
+    console.error('Studio deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete studio' });
+  }
+});
+
+// Delete Model
+router.delete('/models/:id', requireAuth, async (req, res) => {
+  try {
+    const modelId = parseInt(req.params.id);
+    
+    // Check if model exists
+    const model = await req.db.get('SELECT * FROM models WHERE id = ?', [modelId]);
+    if (!model) {
+      return res.status(404).json({ error: 'Model not found' });
+    }
+
+    // Get all sets associated with this model for cleanup
+    const sets = await req.db.all('SELECT * FROM sets WHERE model_id = ?', [modelId]);
+    
+    // Delete all media files for sets associated with this model
+    for (const set of sets) {
+      const media = await req.db.all('SELECT * FROM media WHERE set_id = ?', [set.id]);
+      for (const item of media) {
+        try {
+          const fullPath = path.join(__dirname, '..', item.original_path);
+          const thumbPath = path.join(__dirname, '..', item.thumb_path);
+          await fs.remove(fullPath);
+          await fs.remove(thumbPath);
+        } catch (fileError) {
+          console.warn('File deletion error:', fileError);
+        }
+      }
+      // Delete media records
+      await req.db.run('DELETE FROM media WHERE set_id = ?', [set.id]);
+    }
+
+    // Delete sets
+    await req.db.run('DELETE FROM sets WHERE model_id = ?', [modelId]);
+
+    // Delete model profile image files
+    if (model.profile_image_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', model.profile_image_path));
+      } catch (fileError) {
+        console.warn('Profile image deletion error:', fileError);
+      }
+    }
+    if (model.profile_thumb_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', model.profile_thumb_path));
+      } catch (fileError) {
+        console.warn('Profile thumb deletion error:', fileError);
+      }
+    }
+
+    // Delete model record
+    await req.db.run('DELETE FROM models WHERE id = ?', [modelId]);
+
+    res.json({ success: true, message: 'Model deleted successfully' });
+  } catch (error) {
+    console.error('Model deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete model' });
+  }
+});
+
+// Delete Set
+router.delete('/sets/:id', requireAuth, async (req, res) => {
+  try {
+    const setId = parseInt(req.params.id);
+    
+    // Check if set exists
+    const set = await req.db.get('SELECT * FROM sets WHERE id = ?', [setId]);
+    if (!set) {
+      return res.status(404).json({ error: 'Set not found' });
+    }
+
+    // Delete all media files associated with this set
+    const media = await req.db.all('SELECT * FROM media WHERE set_id = ?', [setId]);
+    for (const item of media) {
+      try {
+        const fullPath = path.join(__dirname, '..', item.original_path);
+        const thumbPath = path.join(__dirname, '..', item.thumb_path);
+        await fs.remove(fullPath);
+        await fs.remove(thumbPath);
+      } catch (fileError) {
+        console.warn('File deletion error:', fileError);
+      }
+    }
+
+    // Delete media records
+    await req.db.run('DELETE FROM media WHERE set_id = ?', [setId]);
+
+    // Delete set cover image files
+    if (set.cover_image_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', set.cover_image_path));
+      } catch (fileError) {
+        console.warn('Cover image deletion error:', fileError);
+      }
+    }
+    if (set.cover_thumb_path) {
+      try {
+        await fs.remove(path.join(__dirname, '..', set.cover_thumb_path));
+      } catch (fileError) {
+        console.warn('Cover thumb deletion error:', fileError);
+      }
+    }
+
+    // Delete set record
+    await req.db.run('DELETE FROM sets WHERE id = ?', [setId]);
+
+    res.json({ success: true, message: 'Set deleted successfully' });
+  } catch (error) {
+    console.error('Set deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete set' });
   }
 });
 
