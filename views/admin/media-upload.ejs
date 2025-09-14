@@ -272,6 +272,11 @@
             color: #721c24;
         }
 
+        .status-skipped {
+            background: #e2e3e5;
+            color: #6c757d;
+        }
+
         .actions {
             display: flex;
             gap: 1rem;
@@ -336,6 +341,9 @@
                     <button type="button" class="btn" id="uploadBtn" onclick="startUpload()" disabled>
                         Upload Selected Files
                     </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearAllFiles()">
+                        Clear All Files
+                    </button>
                     <a href="/admin/sets" class="btn btn-secondary">Back to Sets</a>
                 </div>
             </div>
@@ -399,19 +407,90 @@
         function handleFiles(files) {
             if (uploadInProgress) return;
             
-            selectedFiles = files.filter(file => {
+            const newFiles = files.filter(file => {
                 return file.type.startsWith('image/') || file.type.startsWith('video/');
             });
 
+            // Add new files to existing selection instead of replacing
+            selectedFiles = [...selectedFiles, ...newFiles];
+
+            // Remove duplicates based on name and size
+            const uniqueFiles = [];
+            const seen = new Set();
+            
+            selectedFiles.forEach(file => {
+                const key = `${file.name}_${file.size}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueFiles.push(file);
+                }
+            });
+            
+            selectedFiles = uniqueFiles;
+
+            updateFileDisplay();
+        }
+
+        function updateFileDisplay() {
             if (selectedFiles.length > 0) {
                 uploadBtn.disabled = false;
                 uploadZone.querySelector('.upload-text').textContent = 
-                    `${selectedFiles.length} file(s) selected`;
+                    `${selectedFiles.length} file(s) selected (drag more to add)`;
+                
+                // Show file list in upload zone
+                displaySelectedFiles();
             } else {
                 uploadBtn.disabled = true;
                 uploadZone.querySelector('.upload-text').textContent = 
                     'Click to select files or drag and drop';
+                clearSelectedFilesDisplay();
             }
+        }
+
+        function displaySelectedFiles() {
+            let existingList = uploadZone.querySelector('.selected-files-preview');
+            if (!existingList) {
+                existingList = document.createElement('div');
+                existingList.className = 'selected-files-preview';
+                existingList.style.cssText = `
+                    margin-top: 1rem;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 0.5rem;
+                    background: white;
+                    text-align: left;
+                `;
+                uploadZone.appendChild(existingList);
+            }
+
+            existingList.innerHTML = selectedFiles.map((file, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; border-bottom: 1px solid #eee;">
+                    <span style="font-size: 0.9rem;">
+                        ${file.type.startsWith('video/') ? '🎥' : '🖼️'} ${file.name} (${formatFileSize(file.size)})
+                    </span>
+                    <button type="button" onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 0.25rem 0.5rem; font-size: 0.8rem; cursor: pointer;">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function clearSelectedFilesDisplay() {
+            const existingList = uploadZone.querySelector('.selected-files-preview');
+            if (existingList) {
+                existingList.remove();
+            }
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileDisplay();
+        }
+
+        function clearAllFiles() {
+            selectedFiles = [];
+            fileInput.value = '';
+            updateFileDisplay();
         }
 
         async function startUpload() {
@@ -456,20 +535,50 @@
 
                 if (result.success) {
                     progressFill.style.width = '100%';
-                    progressText.textContent = `Upload complete! ${result.uploaded} files uploaded successfully.`;
                     
-                    // Update all file statuses to success
-                    selectedFiles.forEach((file, index) => {
-                        const status = document.getElementById(`status-${index}`);
-                        status.className = 'file-status status-success';
-                        status.textContent = 'Success';
-                    });
+                    let message = `Upload complete! ${result.uploaded} files uploaded successfully.`;
+                    if (result.skipped > 0) {
+                        message += ` ${result.skipped} duplicates were skipped.`;
+                    }
+                    progressText.textContent = message;
+                    
+                    // Update file statuses based on results
+                    if (result.duplicates && result.duplicates.length > 0) {
+                        // Mark duplicates as skipped
+                        const duplicateNames = new Set(result.duplicates.map(d => d.originalName));
+                        
+                        selectedFiles.forEach((file, index) => {
+                            const status = document.getElementById(`status-${index}`);
+                            if (duplicateNames.has(file.name)) {
+                                status.className = 'file-status status-skipped';
+                                status.textContent = 'Duplicate (Skipped)';
+                                status.title = 'This file was skipped because an identical file already exists in this set';
+                            } else {
+                                status.className = 'file-status status-success';
+                                status.textContent = 'Success';
+                            }
+                        });
+                    } else {
+                        // Mark all as success
+                        selectedFiles.forEach((file, index) => {
+                            const status = document.getElementById(`status-${index}`);
+                            status.className = 'file-status status-success';
+                            status.textContent = 'Success';
+                        });
+                    }
 
                     // Reset after a delay
                     setTimeout(() => {
                         resetUpload();
-                        alert('Upload completed successfully! You can now upload more files or go back to sets.');
-                    }, 1000);
+                        
+                        let alertMessage = `Upload completed successfully! ${result.uploaded} files were uploaded.`;
+                        if (result.skipped > 0) {
+                            alertMessage += `\n${result.skipped} duplicate files were automatically skipped.`;
+                        }
+                        alertMessage += '\n\nYou can now upload more files or go back to sets.';
+                        
+                        alert(alertMessage);
+                    }, 2000);
                 } else {
                     throw new Error(result.error || 'Upload failed');
                 }
@@ -491,13 +600,18 @@
 
         function resetUpload() {
             uploadInProgress = false;
-            selectedFiles = [];
-            fileInput.value = '';
-            uploadBtn.disabled = true;
+            // Don't clear selected files automatically - let user choose
+            uploadBtn.disabled = selectedFiles.length === 0;
             progressSection.style.display = 'none';
             progressFill.style.width = '0%';
             progressText.textContent = '0% complete';
-            uploadZone.querySelector('.upload-text').textContent = 'Click to select files or drag and drop';
+            
+            if (selectedFiles.length > 0) {
+                uploadZone.querySelector('.upload-text').textContent = 
+                    `${selectedFiles.length} file(s) selected (drag more to add)`;
+            } else {
+                uploadZone.querySelector('.upload-text').textContent = 'Click to select files or drag and drop';
+            }
         }
 
         function formatFileSize(bytes) {
