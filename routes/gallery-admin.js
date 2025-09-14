@@ -707,13 +707,13 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
           continue;
         }
 
-        // Generate unique filename using hash prefix
-        const hashPrefix = fileHash.substring(0, 8);
-        const fileName = `${hashPrefix}_${originalBaseName}${fileExt}`;
+        // Generate unique filename using hash suffix
+        const hashSuffix = fileHash.substring(0, 8);
+        const fileName = `${originalBaseName}_${hashSuffix}${fileExt}`;
         
         const finalPath = path.join(mediaDir, fileName);
         const relativePath = `uploads/media/${set.slug}/${fileName}`;
-        const thumbPath = `uploads/thumbs/${set.slug}/${hashPrefix}_${originalBaseName}.webp`;
+        const thumbPath = `uploads/thumbs/${set.slug}/${originalBaseName}_${hashSuffix}.webp`;
 
         // Move file to final location
         await fs.move(file.path, finalPath);
