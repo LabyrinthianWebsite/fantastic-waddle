@@ -203,6 +203,10 @@ class GalleryDatabase extends Database {
     return this.get('SELECT * FROM studios WHERE slug = ?', [slug]);
   }
 
+  async getStudioById(id) {
+    return this.get('SELECT * FROM studios WHERE id = ?', [id]);
+  }
+
   async createStudio(data) {
     const result = await this.run(`
       INSERT INTO studios (name, slug, description, logo_path, logo_thumb_path, website_url, location, established_date)
@@ -244,6 +248,17 @@ class GalleryDatabase extends Database {
       LEFT JOIN studios s ON m.studio_id = s.id
       WHERE m.slug = ?
     `, [slug]);
+  }
+
+  async getModelById(id) {
+    return this.get(`
+      SELECT m.*, 
+             COALESCE(s.name, 'One-Shot Studio') as studio_name,
+             s.slug as studio_slug
+      FROM models m
+      LEFT JOIN studios s ON m.studio_id = s.id
+      WHERE m.id = ?
+    `, [id]);
   }
 
   async createModel(data) {
@@ -297,6 +312,20 @@ class GalleryDatabase extends Database {
     `, [slug]);
   }
 
+  async getSetById(id) {
+    return this.get(`
+      SELECT s.*, 
+             m.name as model_name,
+             m.slug as model_slug,
+             st.name as studio_name,
+             st.slug as studio_slug
+      FROM sets s
+      JOIN models m ON s.model_id = m.id
+      LEFT JOIN studios st ON m.studio_id = st.id
+      WHERE s.id = ?
+    `, [id]);
+  }
+
   async createSet(data) {
     const result = await this.run(`
       INSERT INTO sets (name, slug, description, model_id, release_date, location, photographer, 
@@ -338,6 +367,62 @@ class GalleryDatabase extends Database {
           total_size_bytes = (SELECT COALESCE(SUM(filesize), 0) FROM media WHERE set_id = ?)
       WHERE id = ?
     `, [setId, setId, setId, setId]);
+  }
+
+  // Auto-thumbnailing methods
+  async updateStudioThumbnail(studioId, logoPath, logoThumbPath) {
+    await this.run(`
+      UPDATE studios 
+      SET logo_path = ?, logo_thumb_path = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [logoPath, logoThumbPath, studioId]);
+  }
+
+  async updateModelThumbnail(modelId, profileImagePath, profileThumbPath) {
+    await this.run(`
+      UPDATE models 
+      SET profile_image_path = ?, profile_thumb_path = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [profileImagePath, profileThumbPath, modelId]);
+  }
+
+  async updateSetThumbnail(setId, coverImagePath, coverThumbPath) {
+    await this.run(`
+      UPDATE sets 
+      SET cover_image_path = ?, cover_thumb_path = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [coverImagePath, coverThumbPath, setId]);
+  }
+
+  // Get first uploaded media for auto-thumbnailing
+  async getFirstMediaForSet(setId) {
+    return this.get(`
+      SELECT * FROM media 
+      WHERE set_id = ? 
+      ORDER BY sort_order ASC, created_at ASC 
+      LIMIT 1
+    `, [setId]);
+  }
+
+  async getFirstMediaForModel(modelId) {
+    return this.get(`
+      SELECT m.* FROM media m
+      JOIN sets s ON m.set_id = s.id
+      WHERE s.model_id = ?
+      ORDER BY s.created_at ASC, m.sort_order ASC, m.created_at ASC
+      LIMIT 1
+    `, [modelId]);
+  }
+
+  async getFirstMediaForStudio(studioId) {
+    return this.get(`
+      SELECT m.* FROM media m
+      JOIN sets s ON m.set_id = s.id
+      JOIN models mo ON s.model_id = mo.id
+      WHERE mo.studio_id = ?
+      ORDER BY s.created_at ASC, m.sort_order ASC, m.created_at ASC
+      LIMIT 1
+    `, [studioId]);
   }
 }
 

@@ -11,6 +11,7 @@ const CacheManager = require('./middleware/cacheManager');
 const BackupManager = require('./middleware/backupManager');
 const EnhancedImageProcessor = require('./middleware/enhancedImageProcessor');
 const VideoProcessor = require('./middleware/videoProcessor');
+const AutoThumbnailService = require('./middleware/autoThumbnailService');
 
 const app = express();
 const PORT = process.env.PORT || 6969;
@@ -20,6 +21,7 @@ const db = new GalleryDatabase();
 const cacheManager = new CacheManager();
 const imageProcessor = new EnhancedImageProcessor();
 const videoProcessor = new VideoProcessor();
+const autoThumbnailService = new AutoThumbnailService();
 
 // Initialize backup manager after uploadsDir is defined
 let backupManager;
@@ -110,6 +112,7 @@ app.use((req, res, next) => {
   req.cache = cacheManager;
   req.imageProcessor = imageProcessor;
   req.videoProcessor = videoProcessor;
+  req.autoThumbnailService = autoThumbnailService;
   req.backupManager = backupManager;
   next();
 });

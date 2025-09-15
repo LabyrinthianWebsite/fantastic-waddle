@@ -800,6 +800,21 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
           hash: fileHash
         });
 
+        // Auto-generate thumbnails for related entities
+        try {
+          await req.autoThumbnailService.updateEntityThumbnails(req.db, req.videoProcessor, {
+            id: mediaId,
+            set_id: setId,
+            filename: fileName,
+            display_path: relativePath,
+            thumb_path: thumbPath,
+            file_type: fileType,
+            mime_type: file.mimetype
+          });
+        } catch (thumbnailError) {
+          console.warn('Auto-thumbnail generation failed:', thumbnailError.message);
+        }
+
         results.push({
           id: mediaId,
           filename: fileName,
