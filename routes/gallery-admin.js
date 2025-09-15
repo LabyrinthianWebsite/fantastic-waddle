@@ -6,6 +6,7 @@ const slugify = require('slugify');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const JSZip = require('jszip');
 const VideoProcessor = require('../middleware/videoProcessor');
 const router = express.Router();
 
@@ -54,6 +55,25 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error(`File type ${file.mimetype} not allowed`), false);
+    }
+  }
+});
+
+// Separate multer configuration for ZIP uploads
+const zipUpload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024 * 1024, // 50GB limit per file
+    files: 1 // Only one ZIP file at a time
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept ZIP files only
+    const allowedMimes = ['application/zip', 'application/x-zip-compressed'];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Only ZIP files are allowed for bulk upload`), false);
     }
   }
 });
@@ -853,6 +873,289 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
     console.error('Bulk upload error:', error);
     res.status(500).json({ 
       error: 'Upload failed', 
+      details: error.message 
+    });
+  }
+});
+
+// ZIP Upload page for models
+router.get('/models/:id/upload-zip', requireAuth, async (req, res) => {
+  try {
+    const modelId = parseInt(req.params.id);
+    const model = await req.db.getModelById(modelId);
+    
+    if (!model) {
+      return res.status(404).render('error', { 
+        error: 'Model not found',
+        status: 404 
+      });
+    }
+
+    res.render('admin/zip-upload', {
+      title: `Upload ZIP Sets - ${model.name} - Admin - Gallery Suite`,
+      model: model
+    });
+  } catch (error) {
+    console.error('ZIP upload page error:', error);
+    res.status(500).render('error', { 
+      error: 'Failed to load ZIP upload page',
+      status: 500 
+    });
+  }
+});
+
+// ZIP Upload route for models
+router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), async (req, res) => {
+  try {
+    const modelId = parseInt(req.params.id);
+    
+    // Get model information
+    const model = await req.db.getModelById(modelId);
+    if (!model) {
+      return res.status(404).json({ error: 'Model not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No ZIP file uploaded' });
+    }
+
+    // Validate it's a ZIP file
+    if (!req.file.originalname.toLowerCase().endsWith('.zip')) {
+      await fs.remove(req.file.path);
+      return res.status(400).json({ error: 'File must be a ZIP archive' });
+    }
+
+    console.log(`Processing ZIP upload for model ${model.name}: ${req.file.originalname}`);
+
+    // Read the ZIP file
+    const zipBuffer = await fs.readFile(req.file.path);
+    const zip = await JSZip.loadAsync(zipBuffer);
+
+    // Process ZIP structure to identify sets and files
+    const setStructure = {};
+    const results = {
+      setsCreated: 0,
+      filesProcessed: 0,
+      errors: [],
+      sets: []
+    };
+
+    // First pass: analyze ZIP structure
+    zip.forEach((relativePath, file) => {
+      if (file.dir) return; // Skip directories
+
+      const pathParts = relativePath.split('/').filter(part => part.length > 0);
+      if (pathParts.length < 2) {
+        results.errors.push(`Skipping file "${relativePath}" - not in a set folder`);
+        return;
+      }
+
+      // If there's a root directory in the ZIP, skip it and use the next level as the set name
+      let setName = pathParts[0];
+      let fileName = pathParts[pathParts.length - 1];
+      
+      // If this looks like it might be a root container directory and we have deeper structure
+      if (pathParts.length >= 3) {
+        // Use the second level as the set name (skip the root folder)
+        setName = pathParts[1];
+      }
+
+      // Check if it's an image file
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'];
+      const fileExt = path.extname(fileName).toLowerCase();
+      
+      if (!validExtensions.includes(fileExt)) {
+        results.errors.push(`Skipping file "${relativePath}" - not a supported image format`);
+        return;
+      }
+
+      if (!setStructure[setName]) {
+        setStructure[setName] = [];
+      }
+      setStructure[setName].push({
+        name: fileName,
+        path: relativePath,
+        file: file
+      });
+    });
+
+    console.log(`Found ${Object.keys(setStructure).length} sets in ZIP:`, Object.keys(setStructure));
+
+    // Process each set
+    for (const [setName, files] of Object.entries(setStructure)) {
+      try {
+        console.log(`Processing set "${setName}" with ${files.length} files`);
+        
+        // Create the set
+        const setSlug = createSlug(setName);
+        const setData = {
+          name: setName,
+          slug: setSlug,
+          description: `Uploaded from ZIP file: ${req.file.originalname}`,
+          model_id: modelId,
+          release_date: new Date().toISOString().split('T')[0],
+          location: null,
+          photographer: null,
+          outfit_description: null,
+          theme: null,
+          cover_image_path: null,
+          cover_thumb_path: null
+        };
+
+        const setId = await req.db.createSet(setData);
+        console.log(`Created set "${setName}" with ID ${setId}`);
+
+        // Create directory structure for this set
+        const studioSlug = model.studio_slug || 'independent';
+        const mediaDir = path.join(__dirname, '../uploads/media', studioSlug, setSlug);
+        const thumbsDir = path.join(__dirname, '../uploads/thumbs', studioSlug, setSlug);
+        await fs.ensureDir(mediaDir);
+        await fs.ensureDir(thumbsDir);
+
+        let processedFiles = 0;
+        let firstImagePath = null;
+        let firstImageThumbPath = null;
+
+        // Process each file in the set
+        for (let i = 0; i < files.length; i++) {
+          const fileInfo = files[i];
+          
+          try {
+            // Extract file from ZIP
+            const fileBuffer = await fileInfo.file.async('nodebuffer');
+            
+            // Generate unique filename using hash
+            const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+            const hashSuffix = fileHash.substring(0, 8);
+            const fileExt = path.extname(fileInfo.name);
+            const baseName = path.basename(fileInfo.name, fileExt);
+            const uniqueFileName = `${baseName}_${hashSuffix}${fileExt}`;
+            
+            // Check for duplicate hash in the database
+            const existingMedia = await req.db.get(
+              'SELECT id, filename FROM media WHERE set_id = ? AND hash = ?',
+              [setId, fileHash]
+            );
+
+            if (existingMedia) {
+              console.log(`Skipping duplicate file: ${fileInfo.name}`);
+              continue;
+            }
+
+            // Save file to disk
+            const finalPath = path.join(mediaDir, uniqueFileName);
+            const relativePath = `uploads/media/${studioSlug}/${setSlug}/${uniqueFileName}`;
+            const thumbPath = `uploads/thumbs/${studioSlug}/${setSlug}/${baseName}_${hashSuffix}.webp`;
+            
+            await fs.writeFile(finalPath, fileBuffer);
+
+            // Get image dimensions and create thumbnail
+            let width = null, height = null;
+            try {
+              const metadata = await sharp(finalPath).metadata();
+              width = metadata.width;
+              height = metadata.height;
+
+              // Create WebP thumbnail
+              await sharp(finalPath)
+                .resize(400, 300, { fit: 'cover', withoutEnlargement: true })
+                .webp({ quality: 80 })
+                .toFile(path.join(__dirname, '..', thumbPath));
+
+              // Remember the first image for set cover
+              if (!firstImagePath) {
+                firstImagePath = relativePath;
+                firstImageThumbPath = thumbPath;
+              }
+
+            } catch (imageError) {
+              console.warn(`Failed to process image ${fileInfo.name}:`, imageError.message);
+            }
+
+            // Get file stats
+            const stats = await fs.stat(finalPath);
+
+            // Save to database
+            const mediaId = await req.db.createMedia({
+              set_id: setId,
+              filename: uniqueFileName,
+              original_path: relativePath,
+              display_path: relativePath,
+              thumb_path: thumbPath,
+              file_type: 'image',
+              mime_type: `image/${fileExt.substring(1)}`,
+              filesize: stats.size,
+              width: width,
+              height: height,
+              duration: null,
+              sort_order: processedFiles,
+              hash: fileHash
+            });
+
+            processedFiles++;
+            results.filesProcessed++;
+
+            console.log(`Processed file ${fileInfo.name} as ${uniqueFileName}`);
+
+          } catch (fileError) {
+            console.error(`Error processing file ${fileInfo.name}:`, fileError);
+            results.errors.push(`Failed to process "${fileInfo.name}": ${fileError.message}`);
+          }
+        }
+
+        // Update set with cover image from first uploaded image
+        if (firstImagePath && firstImageThumbPath) {
+          await req.db.run(`
+            UPDATE sets 
+            SET cover_image_path = ?, cover_thumb_path = ?
+            WHERE id = ?
+          `, [firstImagePath, firstImageThumbPath, setId]);
+        }
+
+        // Update set statistics
+        await req.db.updateSetStats(setId);
+
+        results.setsCreated++;
+        results.sets.push({
+          name: setName,
+          id: setId,
+          slug: setSlug,
+          filesProcessed: processedFiles
+        });
+
+        console.log(`Completed processing set "${setName}" with ${processedFiles} files`);
+
+      } catch (setError) {
+        console.error(`Error processing set ${setName}:`, setError);
+        results.errors.push(`Failed to process set "${setName}": ${setError.message}`);
+      }
+    }
+
+    // Clean up uploaded ZIP file
+    await fs.remove(req.file.path);
+
+    console.log(`ZIP processing complete. Created ${results.setsCreated} sets with ${results.filesProcessed} files`);
+
+    res.json({
+      success: true,
+      message: `Successfully processed ZIP file`,
+      ...results
+    });
+
+  } catch (error) {
+    console.error('ZIP upload error:', error);
+    
+    // Clean up uploaded file on error
+    if (req.file && req.file.path) {
+      try {
+        await fs.remove(req.file.path);
+      } catch (cleanupError) {
+        console.warn('Failed to clean up uploaded file:', cleanupError);
+      }
+    }
+    
+    res.status(500).json({ 
+      error: 'ZIP upload failed', 
       details: error.message 
     });
   }
