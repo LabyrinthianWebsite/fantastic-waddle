@@ -449,12 +449,28 @@
             overflow: hidden;
         }
 
+        .lightbox-media-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 100%;
+            max-height: 80vh;
+        }
+
         .lightbox-image {
             width: 100%;
             height: auto;
             max-height: 80vh;
             object-fit: contain;
             display: block;
+        }
+
+        .lightbox-video {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            max-width: 100%;
+            outline: none;
         }
 
         .lightbox-info {
@@ -667,7 +683,16 @@
             <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
             <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&#8249;</button>
             <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&#8250;</button>
-            <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            
+            <!-- Media container for both images and videos -->
+            <div id="lightbox-media-container" class="lightbox-media-container">
+                <img id="lightbox-image" class="lightbox-image" src="" alt="" style="display: none;">
+                <video id="lightbox-video" class="lightbox-video" controls style="display: none;">
+                    <source id="lightbox-video-source" src="" type="">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
             <div class="lightbox-info">
                 <div id="lightbox-filename" class="lightbox-filename"></div>
                 <div id="lightbox-meta" class="lightbox-meta"></div>
@@ -688,6 +713,7 @@
             fullPath: item.display_path,
             thumbPath: item.thumb_path || item.display_path,
             fileType: item.file_type,
+            mimeType: item.mime_type,
             fileSize: item.filesize ? Math.round(item.filesize / 1024) : 0,
             created: item.created_at
         }))) %>;
@@ -704,6 +730,7 @@
                 fullPath: item.fullPath,
                 thumbPath: item.thumbPath,
                 fileType: item.fileType,
+                mimeType: item.mimeType,
                 fileSize: item.fileSize,
                 created: item.created
             }));
@@ -717,15 +744,33 @@
             
             const lightbox = document.getElementById('lightbox');
             const image = document.getElementById('lightbox-image');
+            const video = document.getElementById('lightbox-video');
+            const videoSource = document.getElementById('lightbox-video-source');
             const filename = document.getElementById('lightbox-filename');
             const meta = document.getElementById('lightbox-meta');
             const counter = document.getElementById('lightbox-counter');
             const prevBtn = document.querySelector('.lightbox-prev');
             const nextBtn = document.querySelector('.lightbox-next');
             
-            // Set image and content
-            image.src = '/' + item.fullPath;
-            image.alt = item.filename;
+            // Reset media elements
+            image.style.display = 'none';
+            video.style.display = 'none';
+            video.pause(); // Pause any playing video
+            
+            // Set content based on file type
+            if (item.fileType === 'video') {
+                // Set up video
+                videoSource.src = '/' + item.fullPath;
+                videoSource.type = item.mimeType || 'video/mp4';
+                video.load(); // Reload video with new source
+                video.style.display = 'block';
+            } else {
+                // Set up image
+                image.src = '/' + item.fullPath;
+                image.alt = item.filename;
+                image.style.display = 'block';
+            }
+            
             filename.textContent = item.filename;
             
             // Set meta information
@@ -749,6 +794,13 @@
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const video = document.getElementById('lightbox-video');
+            
+            // Pause video if it's playing
+            if (video && !video.paused) {
+                video.pause();
+            }
+            
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
