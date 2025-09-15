@@ -6,6 +6,7 @@ const slugify = require('slugify');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const VideoProcessor = require('../middleware/videoProcessor');
 const router = express.Router();
 
 // Authentication middleware
@@ -698,7 +699,18 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
           width = metadata.width;
           height = metadata.height;
         } else {
-          // For videos, create a simple content hash
+          // For videos, extract metadata and create content hash
+          try {
+            const videoMeta = await req.videoProcessor.getVideoMetadata(file.path);
+            width = videoMeta.width;
+            height = videoMeta.height;
+            duration = videoMeta.duration;
+            console.log('Video metadata extracted:', { width, height, duration });
+          } catch (videoMetaError) {
+            console.warn('Failed to extract video metadata:', videoMetaError.message);
+          }
+          
+          // Create a simple content hash for videos
           const crypto = require('crypto');
           const fileBuffer = await fs.readFile(file.path);
           fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
@@ -742,10 +754,26 @@ router.post('/sets/:id/upload', requireAuth, upload.array('media', 5000), async 
               .webp({ quality: 80 })
               .toFile(path.join(__dirname, '..', thumbPath));
           } else {
-            // For videos, create a placeholder thumbnail
-            const placeholderThumb = path.join(__dirname, '../public/images/video-placeholder.png');
-            if (await fs.pathExists(placeholderThumb)) {
-              await fs.copy(placeholderThumb, path.join(__dirname, '..', thumbPath));
+            // For videos, extract thumbnail using FFmpeg
+            try {
+              const fullThumbPath = path.join(__dirname, '..', thumbPath);
+              await req.videoProcessor.extractThumbnail(finalPath, fullThumbPath, {
+                width: 400,
+                height: 300,
+                quality: 80
+              });
+              console.log('Video thumbnail generated successfully');
+            } catch (videoError) {
+              console.warn('Video thumbnail generation failed, using placeholder:', videoError.message);
+              // Fallback to placeholder if video processing fails
+              const placeholderThumb = path.join(__dirname, '../public/images/video-placeholder.svg');
+              if (await fs.pathExists(placeholderThumb)) {
+                // Convert SVG placeholder to WebP for consistency
+                await sharp(placeholderThumb)
+                  .resize(400, 300, { fit: 'cover' })
+                  .webp({ quality: 80 })
+                  .toFile(path.join(__dirname, '..', thumbPath));
+              }
             }
           }
         } catch (thumbError) {
