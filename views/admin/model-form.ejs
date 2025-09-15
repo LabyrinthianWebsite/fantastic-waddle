@@ -540,6 +540,19 @@
                         <div class="form-help">Uncheck to mark model as inactive</div>
                     </div>
 
+                    <% if (isEdit) { %>
+                    <!-- ZIP Upload Section -->
+                    <div class="form-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+                        <h3 style="margin-bottom: 1rem; color: #333;">📦 Bulk Upload Sets</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">
+                            Upload ZIP files containing organized image sets. Each folder in the ZIP becomes a set.
+                        </p>
+                        <a href="/admin/models/<%= model.id %>/upload-zip" class="btn" style="background: #28a745;">
+                            📤 Upload ZIP Sets
+                        </a>
+                    </div>
+                    <% } %>
+
                     <div class="form-actions">
                         <a href="/admin/models" class="btn btn-secondary">Cancel</a>
                         <% if (isEdit) { %>

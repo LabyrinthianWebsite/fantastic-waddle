@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .breadcrumb {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: #764ba2;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .drop-zone-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone-subtext {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #zipFile {
+            display: none;
+        }
+
+        .file-info {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .sets-created {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .set-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .set-name {
+            font-weight: 600;
+        }
+
+        .set-files {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ul {
+            color: #666;
+            padding-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        .example {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="breadcrumb">
+                <a href="/admin">Admin</a> › 
+                <a href="/admin/models">Models</a> › 
+                <a href="/admin/models/<%= model.id %>/edit"><%= model.name %></a> › 
+                ZIP Upload
+            </div>
+            <h1>Upload ZIP Sets</h1>
+            <p class="subtitle">Upload ZIP files containing organized image sets for <%= model.name %></p>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 ZIP File Structure Requirements</h3>
+            <ul>
+                <li>ZIP file should contain folders, where each folder represents a set</li>
+                <li>Each folder should contain images for that set</li>
+                <li>Supported image formats: JPG, JPEG, PNG, GIF, WebP, BMP, TIFF</li>
+                <li>Sets will be automatically created with the folder name</li>
+            </ul>
+            
+            <div class="example">
+                Example ZIP structure:<br>
+                my-sets.zip<br>
+                ├── Beach Photoshoot/<br>
+                │   ├── beach001.jpg<br>
+                │   ├── beach002.jpg<br>
+                │   └── beach003.jpg<br>
+                ├── Studio Session/<br>
+                │   ├── studio01.png<br>
+                │   ├── studio02.png<br>
+                │   └── studio03.png<br>
+                └── Outdoor Portraits/<br>
+                    ├── outdoor_01.jpg<br>
+                    └── outdoor_02.jpg
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <form id="zipUploadForm" class="upload-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="zipFile">Select ZIP File</label>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-icon">📦</div>
+                        <div class="drop-zone-text">Drop your ZIP file here or click to browse</div>
+                        <div class="drop-zone-subtext">Maximum file size: 50GB</div>
+                        <input type="file" id="zipFile" name="zipfile" accept=".zip" required>
+                    </div>
+                    <div class="file-info" id="fileInfo">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">
+                        📤 Upload and Process ZIP
+                    </button>
+                    <a href="/admin/models/<%= model.id %>/edit" class="btn btn-secondary">
+                        ← Back to Model
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <h3>Processing ZIP File...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Starting upload...</div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div id="resultMessage"></div>
+            <div class="sets-created" id="setsCreated"></div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('zipFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadForm = document.getElementById('zipUploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultMessage = document.getElementById('resultMessage');
+        const setsCreated = document.getElementById('setsCreated');
+
+        // Drag and drop functionality
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileInfo.style.display = 'block';
+                
+                // Validate file type
+                if (!file.name.toLowerCase().endsWith('.zip')) {
+                    alert('Please select a ZIP file.');
+                    fileInput.value = '';
+                    fileInfo.style.display = 'none';
+                    return;
+                }
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a ZIP file first.');
+                return;
+            }
+
+            // Show progress section
+            progressSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ Processing...';
+
+            const formData = new FormData();
+            formData.append('zipfile', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/admin/models/<%= model.id %>/upload-zip', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                // Hide progress, show results
+                progressSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+
+                if (result.success) {
+                    resultMessage.innerHTML = `
+                        <div class="success-message">
+                            <strong>✅ Success!</strong> ${result.message}<br>
+                            Created ${result.setsCreated} sets with ${result.filesProcessed} files.
+                        </div>
+                    `;
+
+                    // Show created sets
+                    if (result.sets && result.sets.length > 0) {
+                        const setsHtml = result.sets.map(set => `
+                            <div class="set-item">
+                                <div>
+                                    <div class="set-name">${set.name}</div>
+                                    <div class="set-files">${set.filesProcessed} files processed</div>
+                                </div>
+                                <a href="/sets/${set.slug}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View Set</a>
+                            </div>
+                        `).join('');
+                        setsCreated.innerHTML = setsHtml;
+                    }
+
+                    // Show any errors
+                    if (result.errors && result.errors.length > 0) {
+                        resultMessage.innerHTML += `
+                            <div class="error-message">
+                                <strong>⚠️ Some issues occurred:</strong><br>
+                                ${result.errors.map(error => `• ${error}`).join('<br>')}
+                            </div>
+                        `;
+                    }
+
+                } else {
+                    resultMessage.innerHTML = `
+                        <div class="error-message">
+                            <strong>❌ Error:</strong> ${result.error}<br>
+                            ${result.details ? result.details : ''}
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                progressSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+                resultMessage.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ Upload failed:</strong> ${error.message}
+                    </div>
+                `;
+            }
+
+            // Reset upload button
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = '📤 Upload and Process ZIP';
+        });
+
+        // Simulate progress (since we can't track real progress easily)
+        function simulateProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `Processing... ${Math.round(progress)}%`;
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                    progressText.textContent = 'Finalizing...';
+                }
+            }, 500);
+        }
+
+        // Start progress simulation when form is submitted
+        uploadForm.addEventListener('submit', () => {
+            setTimeout(simulateProgress, 100);
+        });
+    </script>
+</body>
+</html>
