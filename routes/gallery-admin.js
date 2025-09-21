@@ -6,7 +6,7 @@ const slugify = require('slugify');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const JSZip = require('jszip');
+const StreamZip = require('node-stream-zip');
 const VideoProcessor = require('../middleware/videoProcessor');
 const router = express.Router();
 
@@ -906,6 +906,8 @@ router.get('/models/:id/upload-zip', requireAuth, async (req, res) => {
 
 // ZIP Upload route for models
 router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), async (req, res) => {
+  let zip = null; // Declare zip variable for cleanup in error handler
+  
   try {
     const modelId = parseInt(req.params.id);
     
@@ -927,9 +929,9 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
 
     console.log(`Processing ZIP upload for model ${model.name}: ${req.file.originalname}`);
 
-    // Read the ZIP file
-    const zipBuffer = await fs.readFile(req.file.path);
-    const zip = await JSZip.loadAsync(zipBuffer);
+    // Read the ZIP file using streaming approach to handle large files (>2GB)
+    zip = new StreamZip.async({ file: req.file.path });
+    const entries = await zip.entries();
 
     // Process ZIP structure to identify sets and files
     const setStructure = {};
@@ -941,13 +943,14 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
     };
 
     // First pass: analyze ZIP structure
-    zip.forEach((relativePath, file) => {
-      if (file.dir) return; // Skip directories
+    for (const entry of Object.values(entries)) {
+      if (entry.isDirectory) continue; // Skip directories
 
+      const relativePath = entry.name;
       const pathParts = relativePath.split('/').filter(part => part.length > 0);
       if (pathParts.length < 2) {
         results.errors.push(`Skipping file "${relativePath}" - not in a set folder`);
-        return;
+        continue;
       }
 
       // If there's a root directory in the ZIP, skip it and use the next level as the set name
@@ -966,7 +969,7 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
       
       if (!validExtensions.includes(fileExt)) {
         results.errors.push(`Skipping file "${relativePath}" - not a supported image format`);
-        return;
+        continue;
       }
 
       if (!setStructure[setName]) {
@@ -975,9 +978,9 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
       setStructure[setName].push({
         name: fileName,
         path: relativePath,
-        file: file
+        entry: entry
       });
-    });
+    }
 
     console.log(`Found ${Object.keys(setStructure).length} sets in ZIP:`, Object.keys(setStructure));
 
@@ -1022,7 +1025,7 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
           
           try {
             // Extract file from ZIP
-            const fileBuffer = await fileInfo.file.async('nodebuffer');
+            const fileBuffer = await zip.entryData(fileInfo.path);
             
             // Generate unique filename using hash
             const fileHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
@@ -1131,6 +1134,9 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
       }
     }
 
+    // Close the ZIP file
+    await zip.close();
+
     // Clean up uploaded ZIP file
     await fs.remove(req.file.path);
 
@@ -1144,6 +1150,15 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
 
   } catch (error) {
     console.error('ZIP upload error:', error);
+    
+    // Clean up ZIP handle if it was opened
+    if (zip) {
+      try {
+        await zip.close();
+      } catch (zipCleanupError) {
+        console.warn('Failed to close ZIP file:', zipCleanupError);
+      }
+    }
     
     // Clean up uploaded file on error
     if (req.file && req.file.path) {
