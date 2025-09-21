@@ -293,10 +293,10 @@ function setupMainImageUpload(zone, fileInput, dropArea, browseBtn) {
 }
 
 function validateFile(file, imageType) {
-    const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
+    const maxSize = 6 * 1024 * 1024 * 1024; // 6GB
     
     if (file.size > maxSize) {
-        alert(`File "${file.name}" is too large. Maximum size is 2GB.`);
+        alert(`File "${file.name}" is too large. Maximum size is 6GB.`);
         return false;
     }
     
