@@ -6,7 +6,7 @@ const imghash = require('imghash');
 
 class EnhancedImageProcessor {
   constructor() {
-    this.supportedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif', 'tiff', 'bmp'];
+    this.supportedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif', 'tiff', 'bmp', 'avif', 'heif', 'heic', 'jxl'];
     this.thumbnailSizes = {
       small: { width: 150, height: 150 },
       medium: { width: 300, height: 300 },

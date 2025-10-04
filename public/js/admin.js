@@ -308,7 +308,7 @@ function validateFile(file, imageType) {
         }
         
         // Check for supported image types
-        const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/heif', 'image/heic', 'image/jxl'];
         if (!supportedTypes.includes(file.type)) {
             alert(`File "${file.name}" is not a supported image format.`);
             return false;

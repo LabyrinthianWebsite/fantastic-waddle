@@ -48,6 +48,7 @@ const upload = multer({
     // Accept images and videos
     const allowedMimes = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff',
+      'image/avif', 'image/heif', 'image/heic', 'image/jxl',
       'video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv'
     ];
     
@@ -964,7 +965,7 @@ router.post('/models/:id/upload-zip', requireAuth, zipUpload.single('zipfile'), 
       }
 
       // Check if it's an image file
-      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'];
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.avif', '.heif', '.heic', '.jxl'];
       const fileExt = path.extname(fileName).toLowerCase();
       
       if (!validExtensions.includes(fileExt)) {
