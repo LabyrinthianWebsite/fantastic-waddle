@@ -6,7 +6,7 @@ const ColorNamer = require('./colorNamer');
 
 class ImageProcessor {
   constructor() {
-    this.supportedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif', 'tiff', 'bmp'];
+    this.supportedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif', 'tiff', 'bmp', 'avif', 'heif', 'heic', 'jxl'];
     this.colorNamer = new ColorNamer();
   }
 
