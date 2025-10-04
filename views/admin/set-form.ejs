@@ -375,7 +375,7 @@
                                 id="release_date" 
                                 name="release_date" 
                                 class="form-input" 
-                                value="<%= set.release_date ? set.release_date.toISOString().split('T')[0] : '' %>"
+                                value="<%= set.release_date ? new Date(set.release_date).toISOString().split('T')[0] : '' %>"
                             >
                             <div class="form-help">Date when the set was released or shot</div>
                         </div>
