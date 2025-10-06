@@ -124,6 +124,23 @@
             gap: 0.5rem;
         }
 
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         .filter-label {
             font-weight: 500;
             color: #333;
@@ -266,6 +283,66 @@
             color: white;
         }
 
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 3rem 0 2rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
         /* Empty State */
         .empty-state {
             background: rgba(255, 255, 255, 0.95);
@@ -323,6 +400,10 @@
             .filter-group {
                 justify-content: space-between;
             }
+
+            .search-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -348,10 +429,11 @@
             <h1 class="page-title">Sites/Models</h1>
             <p class="page-subtitle">Browse all models in the gallery</p>
             
-            <div class="filters">
+            <form class="filters" method="GET">
+                <input type="text" name="search" class="search-input" placeholder="Search models..." value="<%= search || '' %>">
                 <div class="filter-group">
                     <label for="studio-filter" class="filter-label">Studio:</label>
-                    <select id="studio-filter" class="filter-select" onchange="filterModels()">
+                    <select id="studio-filter" name="studio" class="filter-select">
                         <option value="">All Studios</option>
                         <% if (studios && studios.length > 0) { %>
                             <% studios.forEach(studio => { %>
@@ -362,10 +444,17 @@
                         <% } %>
                     </select>
                 </div>
-            </div>
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <% if (search || selectedStudio) { %>
+                    <a href="/models" class="btn btn-secondary">Clear</a>
+                <% } %>
+            </form>
         </div>
 
         <% if (models && models.length > 0) { %>
+            <div class="pagination-info">
+                Showing <%= models.length %> of <%= totalModels %> models
+            </div>
             <div class="models-grid">
                 <% models.forEach(model => { %>
                     <div class="model-card">
@@ -401,29 +490,72 @@
                     </div>
                 <% }); %>
             </div>
+
+            <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% 
+                const buildUrl = (page) => {
+                    const params = new URLSearchParams();
+                    if (search) params.append('search', search);
+                    if (selectedStudio) params.append('studio', selectedStudio);
+                    if (page > 1) params.append('page', page);
+                    return '/models' + (params.toString() ? '?' + params.toString() : '');
+                };
+                %>
+                
+                <% if (currentPage > 1) { %>
+                    <a href="<%= buildUrl(currentPage - 1) %>">&laquo; Previous</a>
+                <% } else { %>
+                    <span class="disabled">&laquo; Previous</span>
+                <% } %>
+
+                <% 
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+                
+                if (startPage > 1) { %>
+                    <a href="<%= buildUrl(1) %>">1</a>
+                    <% if (startPage > 2) { %>
+                        <span>...</span>
+                    <% } %>
+                <% } %>
+
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                    <% if (i === currentPage) { %>
+                        <span class="active"><%= i %></span>
+                    <% } else { %>
+                        <a href="<%= buildUrl(i) %>"><%= i %></a>
+                    <% } %>
+                <% } %>
+
+                <% if (endPage < totalPages) { %>
+                    <% if (endPage < totalPages - 1) { %>
+                        <span>...</span>
+                    <% } %>
+                    <a href="<%= buildUrl(totalPages) %>"><%= totalPages %></a>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="<%= buildUrl(currentPage + 1) %>">Next &raquo;</a>
+                <% } else { %>
+                    <span class="disabled">Next &raquo;</span>
+                <% } %>
+            </div>
+            <% } %>
         <% } else { %>
             <div class="empty-state">
                 <div class="empty-icon">👤</div>
-                <h3>No Models Yet</h3>
-                <p>No models have been added to the gallery yet.</p>
-                <a href="/admin/models/new" class="btn btn-primary" style="margin-top: 1rem;">Add First Model</a>
+                <h3>No Models Found</h3>
+                <p>No models match your search criteria.</p>
+                <% if (search || selectedStudio) { %>
+                    <a href="/models" class="btn btn-primary" style="margin-top: 1rem;">Clear Filters</a>
+                <% } else { %>
+                    <a href="/admin/models/new" class="btn btn-primary" style="margin-top: 1rem;">Add First Model</a>
+                <% } %>
             </div>
         <% } %>
     </main>
 
     <a href="/admin/models/new" class="add-button" title="Add New Model">+</a>
-
-    <script>
-        function filterModels() {
-            const studioFilter = document.getElementById('studio-filter');
-            const selectedStudio = studioFilter.value;
-            
-            if (selectedStudio) {
-                window.location.href = `/models?studio=${selectedStudio}`;
-            } else {
-                window.location.href = '/models';
-            }
-        }
-    </script>
 </body>
 </html>

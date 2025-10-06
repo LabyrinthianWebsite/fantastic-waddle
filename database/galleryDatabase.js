@@ -217,7 +217,9 @@ class GalleryDatabase extends Database {
   }
 
   // Model methods
-  async getModels(studioId = null) {
+  async getModels(studioId = null, options = {}) {
+    const { limit = null, offset = 0, search = null } = options;
+    
     let query = `
       SELECT m.*, 
              COALESCE(s.name, 'One-Shot Studio') as studio_name,
@@ -229,14 +231,53 @@ class GalleryDatabase extends Database {
     `;
     
     const params = [];
+    const whereClauses = [];
+    
     if (studioId) {
-      query += ' WHERE m.studio_id = ?';
+      whereClauses.push('m.studio_id = ?');
       params.push(studioId);
+    }
+    
+    if (search) {
+      whereClauses.push('(m.name LIKE ? OR m.description LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    if (whereClauses.length > 0) {
+      query += ' WHERE ' + whereClauses.join(' AND ');
     }
     
     query += ' GROUP BY m.id ORDER BY m.name';
     
+    if (limit) {
+      query += ' LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+    }
+    
     return this.all(query, params);
+  }
+
+  async getModelsCount(studioId = null, search = null) {
+    let query = 'SELECT COUNT(DISTINCT m.id) as count FROM models m';
+    const params = [];
+    const whereClauses = [];
+    
+    if (studioId) {
+      whereClauses.push('m.studio_id = ?');
+      params.push(studioId);
+    }
+    
+    if (search) {
+      whereClauses.push('(m.name LIKE ? OR m.description LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    if (whereClauses.length > 0) {
+      query += ' WHERE ' + whereClauses.join(' AND ');
+    }
+    
+    const result = await this.get(query, params);
+    return result.count;
   }
 
   async getModelBySlug(slug) {
@@ -275,7 +316,9 @@ class GalleryDatabase extends Database {
   }
 
   // Set methods
-  async getSets(modelId = null) {
+  async getSets(modelId = null, options = {}) {
+    const { limit = null, offset = 0, search = null } = options;
+    
     let query = `
       SELECT s.*, 
              m.name as model_name,
@@ -288,14 +331,57 @@ class GalleryDatabase extends Database {
     `;
     
     const params = [];
+    const whereClauses = [];
+    
     if (modelId) {
-      query += ' WHERE s.model_id = ?';
+      whereClauses.push('s.model_id = ?');
       params.push(modelId);
+    }
+    
+    if (search) {
+      whereClauses.push('(s.name LIKE ? OR s.description LIKE ? OR m.name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
+    if (whereClauses.length > 0) {
+      query += ' WHERE ' + whereClauses.join(' AND ');
     }
     
     query += ' ORDER BY s.release_date DESC, s.created_at DESC';
     
+    if (limit) {
+      query += ' LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+    }
+    
     return this.all(query, params);
+  }
+
+  async getSetsCount(modelId = null, search = null) {
+    let query = 'SELECT COUNT(*) as count FROM sets s';
+    const params = [];
+    const whereClauses = [];
+    
+    if (modelId || search) {
+      query += ' JOIN models m ON s.model_id = m.id';
+    }
+    
+    if (modelId) {
+      whereClauses.push('s.model_id = ?');
+      params.push(modelId);
+    }
+    
+    if (search) {
+      whereClauses.push('(s.name LIKE ? OR s.description LIKE ? OR m.name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
+    if (whereClauses.length > 0) {
+      query += ' WHERE ' + whereClauses.join(' AND ');
+    }
+    
+    const result = await this.get(query, params);
+    return result.count;
   }
 
   async getSetBySlug(slug) {
@@ -334,7 +420,7 @@ class GalleryDatabase extends Database {
     `, [data.name, data.slug, data.description, data.model_id, data.release_date, data.location, 
         data.photographer, data.outfit_description, data.theme, data.cover_image_path, data.cover_thumb_path]);
     
-    return result.id;
+    return result.lastID;
   }
 
   // Media methods
