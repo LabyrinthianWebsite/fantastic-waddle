@@ -270,6 +270,91 @@
             margin-right: auto;
         }
 
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .btn-filter {
+            padding: 0.5rem 1rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #667eea;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination .current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
@@ -316,13 +401,50 @@
                 <a href="/admin/sets/new" class="btn">Add New Set</a>
             </div>
 
-            <% if (sets.length === 0) { %>
+            <% if (sets.length > 0 || search || selectedModel) { %>
+            <div class="filters">
+                <form method="GET" action="/admin/sets" class="filter-row">
+                    <div class="filter-group">
+                        <label for="search" class="filter-label">Search:</label>
+                        <input type="text" id="search" name="search" class="filter-input" placeholder="Search sets..." value="<%= search %>">
+                    </div>
+                    <div class="filter-group">
+                        <label for="model-filter" class="filter-label">Filter by Model:</label>
+                        <select id="model-filter" name="model" class="filter-select">
+                            <option value="">All Models</option>
+                            <% models.forEach(model => { %>
+                            <option value="<%= model.id %>" <%= selectedModel == model.id ? 'selected' : '' %>>
+                                <%= model.name %><%= model.studio_name ? ' (' + model.studio_name + ')' : '' %>
+                            </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="submit" class="btn btn-filter">Apply Filters</button>
+                        <% if (search || selectedModel) { %>
+                        <a href="/admin/sets" class="btn btn-secondary">Clear</a>
+                        <% } %>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+
+            <% if (sets.length === 0 && !search && !selectedModel) { %>
             <div class="content-card">
                 <div class="empty-state">
                     <div class="empty-icon">📸</div>
                     <h3>No Sets Yet</h3>
                     <p>Sets are collections of photos featuring your models. Start by creating your first photo set to showcase your content.</p>
                     <a href="/admin/sets/new" class="btn">Create First Set</a>
+                </div>
+            </div>
+            <% } else if (sets.length === 0) { %>
+            <div class="content-card">
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No Sets Found</h3>
+                    <p>No sets match your current filters. Try adjusting your search or filter criteria.</p>
+                    <a href="/admin/sets" class="btn btn-secondary">Clear Filters</a>
                 </div>
             </div>
             <% } else { %>
@@ -383,6 +505,58 @@
                 </div>
                 <% }); %>
             </div>
+            
+            <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% 
+                const buildUrl = (page) => {
+                    const params = new URLSearchParams();
+                    if (search) params.append('search', search);
+                    if (selectedModel) params.append('model', selectedModel);
+                    if (page > 1) params.append('page', page);
+                    return '/admin/sets' + (params.toString() ? '?' + params.toString() : '');
+                };
+                %>
+                
+                <% if (currentPage > 1) { %>
+                    <a href="<%= buildUrl(currentPage - 1) %>">&laquo; Previous</a>
+                <% } else { %>
+                    <span class="disabled">&laquo; Previous</span>
+                <% } %>
+
+                <% 
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+                
+                if (startPage > 1) { %>
+                    <a href="<%= buildUrl(1) %>">1</a>
+                    <% if (startPage > 2) { %>
+                        <span>...</span>
+                    <% } %>
+                <% } %>
+
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                    <% if (i === currentPage) { %>
+                        <span class="current"><%= i %></span>
+                    <% } else { %>
+                        <a href="<%= buildUrl(i) %>"><%= i %></a>
+                    <% } %>
+                <% } %>
+
+                <% if (endPage < totalPages) { %>
+                    <% if (endPage < totalPages - 1) { %>
+                        <span>...</span>
+                    <% } %>
+                    <a href="<%= buildUrl(totalPages) %>"><%= totalPages %></a>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="<%= buildUrl(currentPage + 1) %>">Next &raquo;</a>
+                <% } else { %>
+                    <span class="disabled">Next &raquo;</span>
+                <% } %>
+            </div>
+            <% } %>
             <% } %>
         </div>
     </main>

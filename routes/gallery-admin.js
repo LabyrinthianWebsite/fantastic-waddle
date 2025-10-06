@@ -296,13 +296,26 @@ router.post('/studios/:id', requireAuth, upload.single('logo'), async (req, res)
 // Models management
 router.get('/models', requireAuth, async (req, res) => {
   try {
-    const models = await req.db.getModels();
+    const studioId = req.query.studio ? parseInt(req.query.studio) : null;
+    const search = req.query.search || null;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 12; // Number of models per page
+    const offset = (page - 1) * perPage;
+    
+    const totalModels = await req.db.getModelsCount(studioId, search);
+    const totalPages = Math.ceil(totalModels / perPage);
+    const models = await req.db.getModels(studioId, { limit: perPage, offset, search });
     const studios = await req.db.all('SELECT * FROM studios ORDER BY name');
+    
     res.render('admin/models', {
       title: 'Manage Models - Admin - Gallery Suite',
       models: models,
       studios: studios,
-      selectedStudio: null
+      selectedStudio: studioId,
+      search: search || '',
+      currentPage: page,
+      totalPages: totalPages,
+      totalModels: totalModels
     });
   } catch (error) {
     console.error('Models management error:', error);
@@ -466,10 +479,31 @@ router.post('/models/:id', requireAuth, upload.single('profile_image'), async (r
 // Sets management
 router.get('/sets', requireAuth, async (req, res) => {
   try {
-    const sets = await req.db.getSets();
+    const modelId = req.query.model ? parseInt(req.query.model) : null;
+    const search = req.query.search || null;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 12; // Number of sets per page
+    const offset = (page - 1) * perPage;
+    
+    const totalSets = await req.db.getSetsCount(modelId, search);
+    const totalPages = Math.ceil(totalSets / perPage);
+    const sets = await req.db.getSets(modelId, { limit: perPage, offset, search });
+    const models = await req.db.all(`
+      SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name 
+      FROM models m 
+      LEFT JOIN studios s ON m.studio_id = s.id 
+      ORDER BY m.name
+    `);
+    
     res.render('admin/sets', {
       title: 'Manage Sets - Admin - Gallery Suite',
-      sets: sets
+      sets: sets,
+      models: models,
+      selectedModel: modelId,
+      search: search || '',
+      currentPage: page,
+      totalPages: totalPages,
+      totalSets: totalSets
     });
   } catch (error) {
     console.error('Sets management error:', error);
