@@ -96,14 +96,25 @@ router.get('/studios/:slug', async (req, res) => {
 router.get('/models', async (req, res) => {
   try {
     const studioId = req.query.studio ? parseInt(req.query.studio) : null;
-    const models = await req.db.getModels(studioId);
+    const search = req.query.search || null;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 12; // Number of models per page
+    const offset = (page - 1) * perPage;
+    
+    const totalModels = await req.db.getModelsCount(studioId, search);
+    const totalPages = Math.ceil(totalModels / perPage);
+    const models = await req.db.getModels(studioId, { limit: perPage, offset, search });
     const studios = await req.db.all('SELECT * FROM studios ORDER BY name');
     
     res.render('gallery/models', {
       title: 'Models - Gallery Suite',
       models: models,
       studios: studios,
-      selectedStudio: studioId
+      selectedStudio: studioId,
+      search: search || '',
+      currentPage: page,
+      totalPages: totalPages,
+      totalModels: totalModels
     });
   } catch (error) {
     console.error('Error loading models:', error);
@@ -142,7 +153,14 @@ router.get('/models/:slug', async (req, res) => {
 router.get('/sets', async (req, res) => {
   try {
     const modelId = req.query.model ? parseInt(req.query.model) : null;
-    const sets = await req.db.getSets(modelId);
+    const search = req.query.search || null;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = 12; // Number of sets per page
+    const offset = (page - 1) * perPage;
+    
+    const totalSets = await req.db.getSetsCount(modelId, search);
+    const totalPages = Math.ceil(totalSets / perPage);
+    const sets = await req.db.getSets(modelId, { limit: perPage, offset, search });
     const models = await req.db.all(`
       SELECT m.*, COALESCE(s.name, 'One-Shot Studio') as studio_name 
       FROM models m 
@@ -154,7 +172,11 @@ router.get('/sets', async (req, res) => {
       title: 'Sets - Gallery Suite',
       sets: sets,
       models: models,
-      selectedModel: modelId
+      selectedModel: modelId,
+      search: search || '',
+      currentPage: page,
+      totalPages: totalPages,
+      totalSets: totalSets
     });
   } catch (error) {
     console.error('Error loading sets:', error);

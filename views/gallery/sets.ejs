@@ -104,6 +104,20 @@
             flex-wrap: wrap;
         }
 
+        .filter-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-form input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .filter-form select {
             padding: 0.75rem;
             border: 2px solid #e0e0e0;
@@ -126,6 +140,14 @@
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
         }
 
         /* Sets Grid */
@@ -200,6 +222,64 @@
             font-size: 1.1rem;
             opacity: 0.7;
         }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-form input[type="text"],
+            .filter-form select {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -227,6 +307,7 @@
 
             <div class="filter-section">
                 <form class="filter-form" method="GET">
+                    <input type="text" name="search" placeholder="Search sets or models..." value="<%= search || '' %>">
                     <label for="model">Filter by Model:</label>
                     <select name="model" id="model">
                         <option value="">All Models</option>
@@ -238,11 +319,17 @@
                             <% }); %>
                         <% } %>
                     </select>
-                    <button type="submit" class="btn">Filter</button>
+                    <button type="submit" class="btn">Apply</button>
+                    <% if (search || selectedModel) { %>
+                        <a href="/sets" class="btn btn-secondary">Clear</a>
+                    <% } %>
                 </form>
             </div>
 
             <% if (sets && sets.length > 0) { %>
+                <div class="pagination-info">
+                    Showing <%= sets.length %> of <%= totalSets %> sets
+                </div>
                 <div class="sets-grid">
                     <% sets.forEach(set => { %>
                         <div class="set-card">
@@ -272,10 +359,65 @@
                         </div>
                     <% }); %>
                 </div>
+
+                <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% 
+                    const buildUrl = (page) => {
+                        const params = new URLSearchParams();
+                        if (search) params.append('search', search);
+                        if (selectedModel) params.append('model', selectedModel);
+                        if (page > 1) params.append('page', page);
+                        return '/sets' + (params.toString() ? '?' + params.toString() : '');
+                    };
+                    %>
+                    
+                    <% if (currentPage > 1) { %>
+                        <a href="<%= buildUrl(currentPage - 1) %>">&laquo; Previous</a>
+                    <% } else { %>
+                        <span class="disabled">&laquo; Previous</span>
+                    <% } %>
+
+                    <% 
+                    const startPage = Math.max(1, currentPage - 2);
+                    const endPage = Math.min(totalPages, currentPage + 2);
+                    
+                    if (startPage > 1) { %>
+                        <a href="<%= buildUrl(1) %>">1</a>
+                        <% if (startPage > 2) { %>
+                            <span>...</span>
+                        <% } %>
+                    <% } %>
+
+                    <% for (let i = startPage; i <= endPage; i++) { %>
+                        <% if (i === currentPage) { %>
+                            <span class="active"><%= i %></span>
+                        <% } else { %>
+                            <a href="<%= buildUrl(i) %>"><%= i %></a>
+                        <% } %>
+                    <% } %>
+
+                    <% if (endPage < totalPages) { %>
+                        <% if (endPage < totalPages - 1) { %>
+                            <span>...</span>
+                        <% } %>
+                        <a href="<%= buildUrl(totalPages) %>"><%= totalPages %></a>
+                    <% } %>
+
+                    <% if (currentPage < totalPages) { %>
+                        <a href="<%= buildUrl(currentPage + 1) %>">Next &raquo;</a>
+                    <% } else { %>
+                        <span class="disabled">Next &raquo;</span>
+                    <% } %>
+                </div>
+                <% } %>
             <% } else { %>
                 <div class="empty-state">
                     <h2>No Sets Found</h2>
                     <p>There are no photo sets to display at this time.</p>
+                    <% if (search || selectedModel) { %>
+                        <a href="/sets" class="btn" style="margin-top: 1rem;">Clear Filters</a>
+                    <% } %>
                 </div>
             <% } %>
         </div>
