@@ -302,6 +302,57 @@
             background: white;
         }
 
+        .filter-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .btn-filter {
+            padding: 0.5rem 1rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #667eea;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination .current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
@@ -353,12 +404,16 @@
                 <a href="/admin/models/new" class="btn">Add New Model</a>
             </div>
 
-            <% if (models.length > 0) { %>
+            <% if (models.length > 0 || search || selectedStudio) { %>
             <div class="filters">
-                <div class="filter-row">
+                <form method="GET" action="/admin/models" class="filter-row">
+                    <div class="filter-group">
+                        <label for="search" class="filter-label">Search:</label>
+                        <input type="text" id="search" name="search" class="filter-input" placeholder="Search models..." value="<%= search %>">
+                    </div>
                     <div class="filter-group">
                         <label for="studio-filter" class="filter-label">Filter by Studio:</label>
-                        <select id="studio-filter" class="filter-select" onchange="filterModels()">
+                        <select id="studio-filter" name="studio" class="filter-select">
                             <option value="">All Studios</option>
                             <% studios.forEach(studio => { %>
                             <option value="<%= studio.id %>" <%= selectedStudio == studio.id ? 'selected' : '' %>>
@@ -368,18 +423,16 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="status-filter" class="filter-label">Filter by Status:</label>
-                        <select id="status-filter" class="filter-select" onchange="filterModels()">
-                            <option value="">All Models</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
+                        <button type="submit" class="btn btn-filter">Apply Filters</button>
+                        <% if (search || selectedStudio) { %>
+                        <a href="/admin/models" class="btn btn-secondary">Clear</a>
+                        <% } %>
                     </div>
-                </div>
+                </form>
             </div>
             <% } %>
 
-            <% if (models.length === 0) { %>
+            <% if (models.length === 0 && !search && !selectedStudio) { %>
             <div class="content-card">
                 <div class="empty-state">
                     <div class="empty-icon">👤</div>
@@ -388,10 +441,19 @@
                     <a href="/admin/models/new" class="btn">Add First Model</a>
                 </div>
             </div>
+            <% } else if (models.length === 0) { %>
+            <div class="content-card">
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No Models Found</h3>
+                    <p>No models match your current filters. Try adjusting your search or filter criteria.</p>
+                    <a href="/admin/models" class="btn btn-secondary">Clear Filters</a>
+                </div>
+            </div>
             <% } else { %>
             <div class="models-grid">
                 <% models.forEach(model => { %>
-                <div class="model-card" data-studio="<%= model.studio_id || '' %>" data-status="<%= model.active ? 'active' : 'inactive' %>">
+                <div class="model-card">
                     <% if (model.profile_thumb_path) { %>
                     <img src="/<%= model.profile_thumb_path %>" alt="<%= model.name %>" class="model-photo">
                     <% } else { %>
@@ -438,34 +500,63 @@
                 </div>
                 <% }); %>
             </div>
+            
+            <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% 
+                const buildUrl = (page) => {
+                    const params = new URLSearchParams();
+                    if (search) params.append('search', search);
+                    if (selectedStudio) params.append('studio', selectedStudio);
+                    if (page > 1) params.append('page', page);
+                    return '/admin/models' + (params.toString() ? '?' + params.toString() : '');
+                };
+                %>
+                
+                <% if (currentPage > 1) { %>
+                    <a href="<%= buildUrl(currentPage - 1) %>">&laquo; Previous</a>
+                <% } else { %>
+                    <span class="disabled">&laquo; Previous</span>
+                <% } %>
+
+                <% 
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+                
+                if (startPage > 1) { %>
+                    <a href="<%= buildUrl(1) %>">1</a>
+                    <% if (startPage > 2) { %>
+                        <span>...</span>
+                    <% } %>
+                <% } %>
+
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                    <% if (i === currentPage) { %>
+                        <span class="current"><%= i %></span>
+                    <% } else { %>
+                        <a href="<%= buildUrl(i) %>"><%= i %></a>
+                    <% } %>
+                <% } %>
+
+                <% if (endPage < totalPages) { %>
+                    <% if (endPage < totalPages - 1) { %>
+                        <span>...</span>
+                    <% } %>
+                    <a href="<%= buildUrl(totalPages) %>"><%= totalPages %></a>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="<%= buildUrl(currentPage + 1) %>">Next &raquo;</a>
+                <% } else { %>
+                    <span class="disabled">Next &raquo;</span>
+                <% } %>
+            </div>
+            <% } %>
             <% } %>
         </div>
     </main>
 
     <script>
-        function filterModels() {
-            const studioFilter = document.getElementById('studio-filter').value;
-            const statusFilter = document.getElementById('status-filter').value;
-            const cards = document.querySelectorAll('.model-card');
-            
-            cards.forEach(card => {
-                const cardStudio = card.getAttribute('data-studio');
-                const cardStatus = card.getAttribute('data-status');
-                
-                let showCard = true;
-                
-                if (studioFilter && cardStudio !== studioFilter) {
-                    showCard = false;
-                }
-                
-                if (statusFilter && cardStatus !== statusFilter) {
-                    showCard = false;
-                }
-                
-                card.style.display = showCard ? 'block' : 'none';
-            });
-        }
-
         function deleteModel(id, name) {
             if (confirm(`Are you sure you want to delete the model "${name}"? This will also delete all associated sets and media.`)) {
                 fetch(`/admin/models/${id}`, {
