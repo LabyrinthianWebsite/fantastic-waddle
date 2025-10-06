@@ -213,7 +213,7 @@ class GalleryDatabase extends Database {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [data.name, data.slug, data.description, data.logo_path, data.logo_thumb_path, data.website_url, data.location, data.established_date]);
     
-    return result.lastID;
+    return result.id;
   }
 
   // Model methods
@@ -312,7 +312,7 @@ class GalleryDatabase extends Database {
         data.age, data.measurements, data.height, data.eye_color, data.hair_color, data.nationality,
         data.instagram_url, data.twitter_url, data.website_url, data.active]);
     
-    return result.lastID;
+    return result.id;
   }
 
   // Set methods
@@ -420,7 +420,7 @@ class GalleryDatabase extends Database {
     `, [data.name, data.slug, data.description, data.model_id, data.release_date, data.location, 
         data.photographer, data.outfit_description, data.theme, data.cover_image_path, data.cover_thumb_path]);
     
-    return result.lastID;
+    return result.id;
   }
 
   // Media methods
@@ -441,7 +441,7 @@ class GalleryDatabase extends Database {
         data.file_type, data.mime_type, data.filesize, data.width, data.height, data.duration, 
         data.sort_order, data.hash]);
     
-    return result.lastID;
+    return result.id;
   }
 
   // Update set statistics after media upload
